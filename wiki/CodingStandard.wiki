@@ -29,6 +29,16 @@ Python files should start with a #! line then an $Id$ line:
 
 In general they should be executable and should run tests when executed, unless they actually implement a command line tool.
 
+=== import ===
+
+(one per line, see PEP 8)
+
+The line previous to an import statement should be a comment that refers to the documentation for the module.  Try and find a reference to the exact version of the documentation you were reading when you used the module.  So prefer http://www.python.org/doc/2.4.4/lib/module-urllib.html over http://www.python.org/doc/lib/module-urllib.html (python.org seems to have recently become friendlier in this regard, it will automatically convert a version-generic doc URL into a particular version, making it more likely that you end up referencing the documentation for a particular version).  Referencing the particular version of the documentation means that we know which version of the module you were programming against.
+
+Avoid `from foo import *`.
+
+An import that is local to a function is okay.
+
 == Fortran, C, /bin/sh ==
 
 *sigh*
