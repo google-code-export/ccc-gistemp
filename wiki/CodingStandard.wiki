@@ -1,0 +1,21 @@
+#summary The coding standards to be used for the project.
+#labels Phase-Implementation,Featured
+
+= Introduction =
+
+Coding standards are necessary to preserve everyone's sanity on a shared software project.
+
+
+= Standards =
+
+In general, prefer the clearer code.  Simpler is often clearer.  Avoid optimisation.
+
+Coding in Python is preferred.  Avoid other languages where possible.
+
+== Python ==
+
+PEP 8 applies.
+
+== Fortran, C, /bin/sh ==
+
+*sigh*
