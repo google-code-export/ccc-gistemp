@@ -8,13 +8,26 @@ Coding standards are necessary to preserve everyone's sanity on a shared softwar
 
 = Standards =
 
-In general, prefer the clearer code.  Simpler is often clearer.  Avoid optimisation.
+Please be: Clear; Simple; Conservative.  Avoid optimisation.
 
 Coding in Python is preferred.  Avoid other languages where possible.
 
 == Python ==
 
-PEP 8 applies.
+[http://www.python.org/dev/peps/pep-0008/ PEP 8] applies.  A very brief summary of which is: 4 space indent (no tabs); 79 columns; one import per line; no white-space before colons; newline immediately after a colon.
+
+All Python code should run on a Python 2.4 system (see "Please be conservative", above.  So do not use newer features.  Read the [http://www.python.org/doc/2.4.4/ Python 2.4 documentation] to avoid accidentally using newer features.  But be aware that Python may actually be run using a newer Python version.  So do not use anything that changes in a later version (I don't know of anything important off-hand, but obviously anything deprecated is right out).
+
+Avoid non-standard extensions.  Sadly this means no numy, no PIL.  For now.
+
+Python files should start with a #! line then an $Id$ line:
+
+{{{
+#!/usr/bin/env python
+# $Id$
+}}}
+
+In general they should be executable and should run tests when executed, unless they actually implement a command line tool.
 
 == Fortran, C, /bin/sh ==
 
