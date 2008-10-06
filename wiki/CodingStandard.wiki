@@ -16,7 +16,7 @@ Coding in Python is preferred.  Avoid other languages where possible.
 
 [http://www.python.org/dev/peps/pep-0008/ PEP 8] applies.  A very brief summary of which is: 4 space indent (no tabs); 79 columns; one import per line; no white-space before colons; newline immediately after a colon.
 
-All Python code should run on a Python 2.4 system (see "Please be conservative", above.  So do not use newer features.  Read the [http://www.python.org/doc/2.4.4/ Python 2.4 documentation] to avoid accidentally using newer features.  But be aware that Python may actually be run using a newer Python version.  So do not use anything that changes in a later version (I don't know of anything important off-hand, but obviously anything deprecated is right out).
+All Python code should run on a Python 2.4 system (see "Please be conservative", above).  So do not use newer features.  Read the [http://www.python.org/doc/2.4.4/ Python 2.4 documentation] to avoid accidentally using newer features.  But be aware that Python may actually be run using a newer Python version.  So do not use anything that changes in a later version (I don't know of anything important off-hand, but obviously anything deprecated is right out).
 
 (In particular regarding Python 2.4 compatible code:) «x if c else y» (Python's ternary expression) is not allowed, as it is Python 2.5.
 
