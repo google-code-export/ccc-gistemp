@@ -39,7 +39,7 @@ The line previous to an import statement should be a comment that refers to the 
 
 Avoid `from foo import *`.
 
-An import that is local to a function is okay.
+An import that is local to a function is okay (this is actually a violation of PEP 8, which says all imports must go at the top of file, but I quite like it.  Discuss).
 
 == Fortran, C, /bin/sh ==
 
