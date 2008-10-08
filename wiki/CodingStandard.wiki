@@ -18,7 +18,7 @@ Coding in Python is preferred.  Avoid other languages where possible.
 
 All Python code should run on a Python 2.4 system (see "Please be conservative", above).  So do not use newer features.  Read the [http://www.python.org/doc/2.4.4/ Python 2.4 documentation] to avoid accidentally using newer features.  But be aware that Python may actually be run using a newer Python version.  So do not use anything that changes in a later version (I don't know of anything important off-hand, but obviously anything deprecated is right out).
 
-(In particular regarding Python 2.4 compatible code:) «x if c else y» (Python's ternary expression) is not allowed, as it is Python 2.5.
+(In particular regarding Python 2.4 compatible code:) «x if c else y» (Python's ternary expression) is not allowed, because it is Python 2.5.
 
 Avoid non-standard extensions.  Sadly this means no numy, no PIL.  For now.
 
@@ -30,6 +30,12 @@ Python files should start with a #! line then an $Id$ line:
 }}}
 
 In general they should be executable and should run tests when executed, unless they actually implement a command line tool.
+
+=== Things PEP 8 doesn't mention ===
+
+No tabs.  Ever.
+
+When producing repeated sequences by multiplying by a number, `[0] * 12` and `'abc' * 10` for example, put the sequence (string, list, tuple) on the left and the number on the right.  This is a completely arbitrary choice so I just picked one (the one that I do by habit, as it happens).
 
 === import ===
 
