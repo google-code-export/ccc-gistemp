@@ -47,6 +47,80 @@ Avoid `from foo import *`.
 
 An import that is local to a function is okay (this is actually a violation of PEP 8, which says all imports must go at the top of file, but I quite like it.  Discuss).
 
+
+=== Documenting Code ===
+
+Please note, this is a first draft. I plan to refine it *very* soon - pao.
+
+For the extraction of API documentation we plan to use 
+[http://epydoc.sourceforge.net/ EpyDoc]. This supports a number of markup styles;
+for CCC code we will use !reStructuredText (RST), using
+[http://epydoc.sourceforge.net/ Docutils]. This combination provides a fairly easy to read
+and lightweight markup within the source code itself, but will allows us to
+generate high quality documentation for all the CC code.
+(*TBD* pao to provide an example of sort of output we should be able generate,
+which will use Sphinx; as used for Python 2.6/3.0.)
+
+
+==== General Guidelines ====
+
+As a minimum you should document all public modules, classes, functions and
+methods. For functions and methods, aim to describe all the arguments and the
+return value, plus any exceptions that the user might reasonably expect.
+
+The main place for API docuemtation is in docstrings. In general,
+[http://www.python.org/dev/peps/pep-0257/ PEP257] applies. What follows extends this
+and, partly, overrides the PEP.
+
+For functions and methods, adopt the following general style:
+
+{{{
+def func(...):
+    """A short concise summary of what the function does.
+
+    A detailed descriptions,
+    on several lines, but try to be reasonably concise.
+
+    :Return:
+        Describe what is returned. [Omit if the function provide no useful
+        return value.]
+    :Param param1:
+        Describe param 1.
+    :Param param2, param3:
+        Describe params 1 and 3
+    :Raise exc1:
+        Describe why exc1 is raised.
+    :Raise exc2:
+        Describe why exc2 is raised.
+
+    """
+    pass
+}}}
+
+For classes and modules use the same style, but (obviously) omit the
+parameters, return values and exceptions.
+
+Some detailed rules:
+
+    * If your function/method has no arguments then simply omit all `:Param...:` entries. The function's signature is good enough. Use an active, imperative style; "calculate the square of x", rather than "this function will calculate the square of x".
+    * Similarly only document the return value and exceptions when necessary.
+    * The first sentence should be usable within a summary page so it should be short and concise. It should *never* be longer than a single sentence and, ideally, should fit on the first line.
+    * Leave a blank line before the closing quotes, in accordance with [http://www.python.org/dev/peps/pep-0257/ PEP257].
+
+The `:Param...` and similar entries are _EpyDoc-RST_` constructs.
+
+For a script, the docstring should provide detailed usage information, such as
+you might provide in a manual page. This advice differs from
+[http://www.python.org/dev/peps/pep-0257/ PEP257], which says the docstring
+should be usable as a usage message. However, the PEP suggestion does not work
+so well with [http://www.python.org/doc/2.4.4/lib/module-optparse.html
+optparse]. It is better to provide a `--man`` option to your script (*TBD*, pao
+to link to a useful example).
+
+
+More information of using !EpyDoc syntax to document code will appear on EpyDocRst.
+
+
 == Fortran, C, /bin/sh ==
 
 *sigh*
