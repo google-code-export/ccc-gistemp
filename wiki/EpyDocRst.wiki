@@ -1,3 +1,69 @@
-#summary Using EpyDoc
+#summary An !EpyDoc/reStructureText Overview.
 
-= Introduction =
+= Documenting Code using !EpyDoc and reStructureText =
+
+Please note, this is a first draft. I plan to refine it *very* soon - pao.
+
+== What is reStructureText? ==
+
+Well, reStructureText is a very powerful (expressive) markup text markup
+language, which is nevertheless remarkably lightweight in most circumstances.
+Its lightweight nature makes is very well suited to embedded code and API
+documentation; the markup was designed to be as unobtrusive as possible.
+
+In many ways, reStructureText is quite similar to the various flavours of
+of WIKI markup styles. The following section provides a *very* brief primer.
+
+
+=== Minimal RST Primer ===
+
+|| reStructureText                     || Result                             ||
+|| Inline {{(*emphasis*`}}}            || Inline _emphasis_                  ||
+|| Inline {{{**bold}**}}}              || Inline *bold*                      ||
+|| Inline {{{``literal``}}} fixed font || Inline `literal` fixed font        ||
+|| Inline `interpreted text`           || Inline interpreted text            ||
+
+The `interpreted text` markup is a generic mechanism, which within !EpyDoc is
+used to provide hyper-linking to modules, classes, etc.
+
+You can also do things like bulleted and numbered lists. For example:
+
+{{{
+The following shows a nested set of bulleted and numbered lists.
+
+- A bullet item,
+  which can span lines, but which will get wrapped when it is rendered.
+
+- A second bullet.
+
+  - Nested items work as well. You **must** have blank line before the item in
+    a nested list.
+  - But, often you do not need extra blank lines. !DocUtils is pretty good at
+    figuring out what you mean.
+
+1. You can provide numbered lists.
+
+2. Using
+
+   a. The normal
+
+      i.    Set of numbering
+      ii.   Schemes.
+      iii.  And you can nest
+
+            - Bulleted lists and numbered lists
+            - Pretty much as you would expect.
+}}}
+
+Notice that in the above examples, the text can be formatted so that it is easy
+to read as plain text; for example, we have line breaks and leading spaces
+within a single bullet item. This is a major feature of RST, in its raw form it
+looks very similar to what you might produce using a good old fashioned
+typewriter and a lot of care. (BTW If you think it is difficult to format plain
+text as in the previous example then you are either using a poor text editor or
+using a good text editor poorly.)
+
+The DocUtils pacakage (and or course EpyDoc) renders the above very well.
+Unfortunatley this WIKI's markup is not up to the task (pao at least not as I
+currently undestand it - (todo perhaps pao can add link to properly rendered
+HTML) .
