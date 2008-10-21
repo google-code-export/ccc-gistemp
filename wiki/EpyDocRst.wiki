@@ -18,8 +18,8 @@ of WIKI markup styles. The following section provides a *very* brief primer.
 === Minimal RST Primer ===
 
 || reStructureText                     || Result                             ||
-|| Inline {{(*emphasis*`}}}            || Inline _emphasis_                  ||
-|| Inline {{{**bold}**}}}              || Inline *bold*                      ||
+|| Inline `*emphasis*`                 || Inline _emphasis_                  ||
+|| Inline {{{**bold**}}}              || Inline *bold*                      ||
 || Inline {{{``literal``}}} fixed font || Inline `literal` fixed font        ||
 || Inline `interpreted text`           || Inline interpreted text            ||
 
@@ -63,7 +63,7 @@ typewriter and a lot of care. (BTW If you think it is difficult to format plain
 text as in the previous example then you are either using a poor text editor or
 using a good text editor poorly.)
 
-The DocUtils pacakage (and or course EpyDoc) renders the above very well.
+The !DocUtils pacakage (and of course !EpyDoc) renders the above very well.
 Unfortunatley this WIKI's markup is not up to the task (pao at least not as I
-currently undestand it - (todo perhaps pao can add link to properly rendered
+currently understand it) - (todo perhaps pao can add link to properly rendered
 HTML) .
