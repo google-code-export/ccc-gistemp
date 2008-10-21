@@ -1,4 +1,4 @@
-#summary An !EpyDoc/reStructureText Overview.
+#summary An EpyDoc/reStructureText Overview.
 
 = Documenting Code using !EpyDoc and reStructureText =
 
