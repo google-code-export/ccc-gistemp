@@ -63,8 +63,8 @@ for CCC code we will use reStructuredText (RST), which is defined at
 [http://epydoc.sourceforge.net/ Docutils].
 
 The general rules are follow here, but for all the details of how to document
-with [http://epydoc.sourceforge.net/ Epydoc] see [EpydocSyntax using Epydoc
-syntax for API documentation].
+with [http://epydoc.sourceforge.net/ Epydoc] see 
+[EpydocSyntax using Epydoc syntax for API documentation].
 
 
 ==== What Should be Documented ====
@@ -82,8 +82,9 @@ private. Things to document include:
   * All public global variables within a module.
 
 With well documented source code we will be able to produce reference material
-something like this [http://www.ollis.eclipse.co.uk/index.html example
-generated documentation]. **Note: This is just an example. I have taken
+something like this
+[http://www.ollis.eclipse.co.uk/index.html example generated documentation].
+**Note: This is just an example. I have taken
 liberties with some CCC module to generate this.**
 
 
