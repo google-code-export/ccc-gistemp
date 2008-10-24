@@ -1,0 +1,61 @@
+#summary Epydoc Syntax for API Documentation
+
+= Introduction =
+
+This page is intended to provide a guide to writing complete API documentation
+using the syntax supported by [http://epydoc.sourceforge.net/ Epydoc].
+
+Generally guidance is provided by lots of examples rather than trying to specify
+things too formally. 
+
+The style of markup used is reStructuredText, see
+[http://epydoc.sourceforge.net/ Docutils] for full details. This guide does not
+try to provide much information about reStructuredText, except for the special
+ways that [http://epydoc.sourceforge.net/ Epydoc] uses it. The 
+[MiniRstPrimer reStructuredText primer for coders] page provides an introduction.
+
+
+== Modules ==
+
+The module's documentation is defined in its docstring at the top of the 
+source file. A semi-realistic example follows:
+
+{{{
+#!/usr/bin/env python
+# $Id: //info.ravenbrook.com/project/ccc/version/0.1/code/fort.py#1 $
+"""Support for Python/Fortran interworking.
+
+This module provides support for writing Python modules and programs that need
+to interwork with Fortran in various ways.
+
+The main thing this module provides is the `File` class, which supports access
+to unformatted files; a binary file format.
+
+The other main feature is the `unpackRecord` function, which can be useful
+during the initial stages of converting a Fortran program to reasonably simliar
+looking Python code.
+
+"""
+__docformat__ = "restructuredtext"
+
+}}}
+
+This example introduces some general rules.
+
+    The docstring should start with a short summary, which should be a single
+    sentence; aim to fit it on a single line. This string is typically used
+    documentation tools to provide a summay, separate from the full
+    documentation.
+
+    There should be a blank line before the closing (triple) quotes.
+
+    You **always** need the `__docformat__ = "restructuredtext"` line, which
+    should normally immediately follow the docstring. (Without this, 
+    [http://epydoc.sourceforge.net/ Epydoc] will not correctly interpret the
+    documentation markup.
+
+The other notable items are the names surrounded by backquote characters. for
+example {{{`File`}}}. These are references to other documented items within
+the module. Generated documentation can turn such references into hypertext
+links.
+    
