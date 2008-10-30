@@ -178,7 +178,7 @@ The docstring of the class describes what the class is for and, for suitable
 complex classes should give guidance on how to use it.
 
 All public methods are documented in exactly the same way as module functions.
-Do not include `self` in the docoumented argements.
+Do not include `self` in the documented arguments.
 
 For class attributes it is preferable to use the special comment form to
 document them, as for `w` in the above example. For instance attributes
@@ -220,7 +220,7 @@ def readline(self) :
     """
 }}}
 
-Exceptions should be automatically cross-referenced when in a
+Exceptions should be automatically cross-referenced when in
 a `:Raises ...:` field. Otherwise you can explicitly reference them as in:
 
 {{{
