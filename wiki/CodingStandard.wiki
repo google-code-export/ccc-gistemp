@@ -20,7 +20,7 @@ All Python code should run on a Python 2.4 system (see "Please be conservative",
 
 (In particular regarding Python 2.4 compatible code:) «x if c else y» (Python's ternary expression) is not allowed, because it is Python 2.5.
 
-Avoid non-standard extensions.  Sadly this means no numy, no PIL.  For now.
+Avoid non-standard extensions.  Sadly this means no numpy, no PIL.  For now.
 
 Python files should start with a #! line then an $Id$ line:
 
