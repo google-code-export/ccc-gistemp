@@ -2,9 +2,10 @@
 
 = Introduction =
 
-Mostly these are acronyms.
+Mostly these are acronyms.  Please feel free to add entries, even if you don't know what they are.  Someone else can come along and fill them in.
 
 = Glossary =
 
-MCDW
- * Monthly Climatic Data for the World.  A quality controlled publication of historical weather values.
+*MCDW* : Monthly Climatic Data for the World.  A quality controlled publication of historical weather values.
+*ccc-gistemp* : Clear Climate Code GISTEMP.  This project; a reimplementation of GISTEMP.
+*GISTEMP* : A historical temperature reconstruction made by NASA GISS.
