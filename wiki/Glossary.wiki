@@ -6,6 +6,16 @@ Mostly these are acronyms.  Please feel free to add entries, even if you don't k
 
 = Glossary =
 
+<wiki:comment>
+Each entry is a paragraph with the acronym in bold.  After the acronym use a space and colon and another space before the explanation.  Like this:
+
+*ENTRY* : Explanation.
+
+Separate each entry with a blank line (to make it a new paragraph).
+</wiki:comment>
+
 *MCDW* : Monthly Climatic Data for the World.  A quality controlled publication of historical weather values.
+
 *ccc-gistemp* : Clear Climate Code GISTEMP.  This project; a reimplementation of GISTEMP.
+
 *GISTEMP* : A historical temperature reconstruction made by NASA GISS.
