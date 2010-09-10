@@ -1,0 +1,10 @@
+#summary Glossary of terms used in this project
+
+= Introduction =
+
+Mostly these are acronyms.
+
+= Glossary =
+
+MCDW
+ * Monthly Climatic Data for the World.  A quality controlled publication of historical weather values.
