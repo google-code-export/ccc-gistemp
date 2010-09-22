@@ -14,8 +14,10 @@ Each entry is a paragraph with the acronym in bold.  After the acronym use a spa
 Separate each entry with a blank line (to make it a new paragraph).
 </wiki:comment>
 
-*MCDW* : Monthly Climatic Data for the World.  A quality controlled publication of historical weather values.
-
 *ccc-gistemp* : Clear Climate Code GISTEMP.  This project; a reimplementation of GISTEMP.
 
+*GHCN* : [http://www.ncdc.noaa.gov/oa/climate/ghcn-monthly/ Global Historical Climate Network].  A database of "historical temperature, precipitation, and pressure data for thousands of land stations worldwide".  A primary source for ccc-gistemp and the largest source of temperature data used in the analysis.
+
 *GISTEMP* : A historical temperature reconstruction made by NASA GISS.
+
+*MCDW* : Monthly Climatic Data for the World.  A quality controlled publication of historical weather values.
