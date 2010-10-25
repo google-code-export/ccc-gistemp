@@ -36,9 +36,9 @@ Python files should start with a #! line then the keywords junk for our SCM (cur
 
 The name is so that we know who to ask when we have a question.  The affiliation is optional, leave it off if you don't want your company/organisation associated with the work.  The date should be the data of creation or last major revision (detailed revision data is kept in SCM and should _not_ be recorded here).
 
-[We should probably have a copyright notice somewhere;  in general the copyright will be owned by whoever wrote the code]
+(We should probably have a copyright notice somewhere;  in general the copyright will be owned by whoever wrote the code.)
 
-Following that there should be a description of the program, it may be sensible to put this in a Python doc string.
+Following the header comment there should be a description of the program.  Generally this should be inside a Python doc string (this is the string that is printed out when you go: «import foo;help(foo)»).
 
 In general Python files should be executable and should run tests when executed, unless they actually implement a command line tool.
 
@@ -101,4 +101,4 @@ liberties with some CCC module to generate this.**
 
 == Fortran, C, /bin/sh ==
 
-*sigh*
+Avoid these where possible.  Since 2010, they are no longer used by ccc-gistemp.
