@@ -108,7 +108,7 @@ def southern40() :
     # And stitch back into a single, southern, list
     s = []
     # Note: used for side-effect!
-    map(lambda x: s.extend(x), band)
+    list(map(lambda x: s.extend(x), band))
     assert len(s) == len(n)
 
     # Flip each box north/south
@@ -220,8 +220,8 @@ def gridR3() :
       z = math.sin(lat)
       c = math.cos(lat)
       long = i[1]*math.pi/180
-      x = math.cos(long) * c
-      y = math.sin(long) * c
+      x = math.cos(int) * c
+      y = math.sin(int) * c
       return (x,y,z)
 
     def bto3d(i) :
@@ -230,9 +230,9 @@ def gridR3() :
 
       # For counter-clockwise corners, start at NE and work round.
       # Recall border 4-tuple convention described in grid.
-      return map(llto3d, ((i[1],i[3]), (i[1],i[2]), (i[0],i[2]), (i[0],i[3])))
+      return list(map(llto3d, ((i[1],i[3]), (i[1],i[2]), (i[0],i[2]), (i[0],i[3]))))
 
-    return itertools.imap(bto3d, grid())
+    return map(bto3d, grid())
 
 
 def gridJSON() :
@@ -242,7 +242,7 @@ def gridJSON() :
     string matches a JSON array production.
 
     """
-    return str(list(itertools.imap(lambda x: map(list, x), gridR3())))
+    return str(list(map(lambda x: list(map(list, x)), gridR3())))
 
 
 def centre(box) :

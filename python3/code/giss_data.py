@@ -28,7 +28,7 @@ import sys
 # http://docs.python.org/release/2.4.4/lib/warning-functions.html
 import warnings
 
-import read_config
+from . import read_config
 
 #: The base year for time series data. Data before this time is not
 #: used in calculations.
@@ -356,7 +356,7 @@ class Series(object):
 
     """
     def __init__(self, **k):
-        self._first_month = sys.maxint
+        self._first_month = sys.maxsize
         self._series = []
         self._good_count = None
         self.ann_anoms = []
@@ -464,14 +464,14 @@ class Series(object):
     def first_valid_year(self):
         """The first calendar year with any valid data."""
         index = (i for i,x in enumerate(self.series) if x != MISSING)
-        first = index.next()
+        first = next(index)
         return first//12 + self.first_year
 
     def last_valid_year(self):
         """The last calendar year with any valid data."""
         index = (i for i,x in reversed(list(enumerate(self.series)))
           if x != MISSING)
-        last = index.next()
+        last = next(index)
         return last//12 + self.first_year
 
     def get_monthly_valid_counts(self):
@@ -565,7 +565,7 @@ class Series(object):
         with MISSING).
         """
 
-        if self.first_month == sys.maxint:
+        if self.first_month == sys.maxsize:
             self._first_month = year * 12 + 1
         else:
             # We have data already, so we may need to pad with missing months
@@ -629,6 +629,6 @@ class SubboxMetaData(object):
 
 def boxuid(box):
     """Synthesize a uid attribute based on the box's centre."""
-    import eqarea
+    from . import eqarea
     lat,lon = eqarea.centre(box)
     return "%+05.1f%+06.1fC" % (lat,lon)

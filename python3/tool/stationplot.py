@@ -50,7 +50,7 @@ import os
 import sys
 
 # Clear Climate Code
-import extend_path
+from . import extend_path
 
 # :todo: Should really import this from somewhere.  Although this BAD
 # value is entirely internal to this module.
@@ -79,7 +79,7 @@ def derive_config(config):
         c.titlesize = 1.25*c.fontsize
 
     d = dict(titlesize=titlesize)
-    for attr,fn in d.items():
+    for attr,fn in list(d.items()):
         if not hasattr(config, attr):
             fn(config)
 
@@ -163,7 +163,7 @@ def plot(arg, inp, out, meta, timewindow=None, mode='temp', scale=0.1):
     if meta:
         meta = get_meta(datadict, meta)
         title = []
-        for id11,d in meta.items():
+        for id11,d in list(meta.items()):
             title.append('%s %+06.2f%+07.2f  %s' %
               (id11, d['lat'], d['lon'], d['name']))
     title = '\n'.join(title)
@@ -182,10 +182,10 @@ def plot(arg, inp, out, meta, timewindow=None, mode='temp', scale=0.1):
     if timewindow:
         # :todo: make work with mode=annual
         datadict = window(datadict, timewindow)
-    for _,(data,begin) in datadict.items():
+    for _,(data,begin) in list(datadict.items()):
         minyear = min(minyear, begin)
         limyear = max(limyear, begin + (len(data)//K))
-        valid_data = filter(valid, data)
+        valid_data = list(filter(valid, data))
         ahigh = max(valid_data)
         alow = min(valid_data)
         highest = max(highest, ahigh)
@@ -276,10 +276,10 @@ def plot(arg, inp, out, meta, timewindow=None, mode='temp', scale=0.1):
     s = (-minyear)%10
     # Where we want ticks, in years offset from the earliest year.
     # We have ticks every decade.
-    tickat = range(s, w+1, 10)
+    tickat = list(range(s, w+1, 10))
     out.write("  <path d='" +
-      ''.join(map(lambda x: 'M%d %.1fl0 %.1f' %
-      (x*config.xscale, overshoot, -(plotheight+overshoot)), tickat)) +
+      ''.join(['M%d %.1fl0 %.1f' %
+      (x*config.xscale, overshoot, -(plotheight+overshoot)) for x in tickat]) +
       "' />\n")
     # Horizontal labels.
     for x in tickat:
@@ -293,9 +293,9 @@ def plot(arg, inp, out, meta, timewindow=None, mode='temp', scale=0.1):
     # Ticks every 5 degrees C
     every = 5*config.yscale
     s = (-ybottom) % every
-    tickat = map(lambda x:x+s, range(0, int(plotheight+1-s), every))
+    tickat = [x+s for x in list(range(0, int(plotheight+1-s), every))]
     out.write("  <path d='" +
-      ''.join(map(lambda y: 'M0 %.1fl-8 0' % -y, tickat)) +
+      ''.join(['M0 %.1fl-8 0' % -y for y in tickat]) +
       "' />\n")
     for y in tickat:
         # Note: "%.0f' % 4.999 == '5'
@@ -311,7 +311,7 @@ def plot(arg, inp, out, meta, timewindow=None, mode='temp', scale=0.1):
         value = 'Anomaly'
     out.write("  <text text-anchor='start'>"
       "<textPath xlink:href='#pvlabel'>"
-      u"%s (\N{DEGREE SIGN}C)</textPath></text>\n" % value)
+      "%s (\N{DEGREE SIGN}C)</textPath></text>\n" % value)
     # End of vertical axis group.
     out.write("</g>\n")
     # End of "axes" group.
@@ -330,7 +330,7 @@ def plot(arg, inp, out, meta, timewindow=None, mode='temp', scale=0.1):
     out.write("""<rect class='debug' x='%d' y='%.1f' width='%d' height='%.1f'
       stroke='pink' fill='none' opacity='0.30' />\n""" % databox)
 
-    for id12,series in datadict.items():
+    for id12,series in list(datadict.items()):
         out.write("<g class='record%s'>\n" % id12)
         for segment in aplot(series, K):
             out.write(aspath(segment)+'\n')
@@ -369,7 +369,7 @@ def window(datadict, timewindow):
     assert int(t1) == t1
     assert int(t2) == t2
     d = {}
-    for id12,(data,begin) in datadict.items():
+    for id12,(data,begin) in list(datadict.items()):
         if t2 <= begin:
             continue
         end = begin+len(data)//12
@@ -399,7 +399,7 @@ def get_meta(l, meta):
             lon = float(line[50:57]),
         )
     d = {}
-    l = set(map(lambda x: x[:11], l))
+    l = set([x[:11] for x in l])
     for id11 in l:
         if id11 in full:
             d[id11] = full[id11]
@@ -490,7 +490,7 @@ def from_lines(lines, scale=0.1):
             # same year for a particular station.  The v2.mean input
             # file has 3 identical lines for "8009991400101971"
             if line == prevline:
-                print "NOTE: repeated record found: Station %s year %s; data are identical" % (line[:12],line[12:16])
+                print("NOTE: repeated record found: Station %s year %s; data are identical" % (line[:12],line[12:16]))
                 continue
             # This is unexpected.
             assert 0, "Two lines specify different data for %s" % line[:16]
@@ -521,7 +521,7 @@ def asdict(arg, inp, mode, scale=0.1):
     """
 
     # Clear Climate Code, tool directory
-    import v2index
+    from . import v2index
     # Clear Climate Code
     from code import series
 
@@ -563,7 +563,7 @@ def parse_topt(v):
     comma.  A pair of years is returned.
     """
 
-    return map(int, v.split(','))
+    return list(map(int, v.split(',')))
 
 class Usage(Exception):
     pass
@@ -614,7 +614,7 @@ def main(argv=None):
         metafile = open(metafile)
         derive_config(config)
         return plot(arg, inp=infile, out=outfile, meta=metafile, **key)
-    except (getopt.GetoptError, Usage), e:
+    except (getopt.GetoptError, Usage) as e:
         sys.stdout.write('%s\n' % str(e))
         sys.stdout.write(__doc__)
         return 99

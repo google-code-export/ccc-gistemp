@@ -12,8 +12,8 @@ import struct
 import sys
 
 # Clear Climate Code
-import fort
-import giss_io
+from . import fort
+from . import giss_io
 
 # Not sure what these constants are; cribbed from zonav.f.
 # They boil down to the fact that the ZON.* file contains 14 records.

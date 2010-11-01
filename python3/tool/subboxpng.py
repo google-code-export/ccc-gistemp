@@ -34,7 +34,7 @@ import itertools
 import png
 
 # Clear Climate Code
-import extend_path
+from . import extend_path
 from code import eqarea
 from code.giss_data import MISSING
 
@@ -44,7 +44,7 @@ def topng(inp, date=None):
     subbox file."""
 
     # :todo: move into proper module.
-    from landmask import centrein
+    from .landmask import centrein
 
     resolution = 0.25
     width = 360/resolution
@@ -94,7 +94,7 @@ def topng(inp, date=None):
 def maskbybox(inp, grid):
     """Read a step5mask file box by box.  Yield (value, box) pair.
     """
-    for row,box in itertools.izip(inp, grid):
+    for row,box in zip(inp, grid):
         lat = float(row[:5])
         lon = float(row[5:11])
         s,n,w,e = box
@@ -115,16 +115,16 @@ def extractdate(inp, cells, date):
     the binary subbox file *inp* extract the values corresponding to the
     date box by box.
     """
-    import giss_io
+    from . import giss_io
 
-    year,month = map(int, date.split('-'))
+    year,month = list(map(int, date.split('-')))
 
     records = iter(giss_io.SubboxReader(inp))
-    meta = records.next()
+    meta = next(records)
     base_year = meta.yrbeg
     # Index of required month in the record series.
     i = (year - base_year)*12 + month - 1
-    for record,box in itertools.izip(records, cells):
+    for record,box in zip(records, cells):
         assert record.first_year == base_year
         if i >= len(record.series):
             yield MISSING, box
@@ -156,7 +156,7 @@ def colourscale(v):
     # which *v* lies).
     t = (v-l[0]) / (r[0]-l[0])
     # Compute the interpolated colour.
-    c = map(lambda a,b: lerp(t, a, b), l[1], r[1])
+    c = list(map(lambda a,b: lerp(t, a, b), l[1], r[1]))
     c = [int(round(x)) for x in c]
     return c
 

@@ -47,7 +47,7 @@ def map(when, inp, out):
     out.write("""</svg>\n""")
 
 def topixel(lat, lon):
-    u"""Return x,y coordinate.  Plate Carr\xe9e projection."""
+    """Return x,y coordinate.  Plate Carr\xe9e projection."""
 
     return lon,lat
 
@@ -87,7 +87,7 @@ def main(argv=None):
         f = open(argv[2])
     else:
         f = sys.stdin
-    map(when, f, sys.stdout)
+    list(map(when, f, sys.stdout))
 
 if __name__ == '__main__':
     main()

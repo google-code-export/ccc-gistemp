@@ -16,12 +16,12 @@ are computed from monthly anomalies.
 """
 
 # Clear Climate Code
-import eqarea
-import giss_data
-import parameters
-import series
+from . import eqarea
+from . import giss_data
+from . import parameters
+from . import series
 from tool import giss_io
-from giss_data import valid, invalid, MISSING
+from .giss_data import valid, invalid, MISSING
 
 # http://www.python.org/doc/2.3.5/lib/itertools-functions.html
 import itertools
@@ -37,7 +37,7 @@ def SBBXtoBX(data):
     Returns an iterator of box data.
     """
 
-    meta = data.next()
+    meta = next(data)
     mask_meta, land_meta, ocean_meta = meta
 
     # TODO: Formalise use of only monthlies, see step 3.
@@ -66,7 +66,7 @@ def SBBXtoBX(data):
         wgtc = []
         # Eat the records from land and ocean 100 (nsubbox) at a time.
         # In other words, all 100 subboxes for the box.
-        landweight,landsub,oceansub = zip(*itertools.islice(data, nsubbox))
+        landweight,landsub,oceansub = list(zip(*itertools.islice(data, nsubbox)))
         # Check that we got nsubbox items.  Is this fails, truncated
         # input files is the likely culprit.
         assert set([nsubbox]) == set(map(len, [landweight, landsub, oceansub]))
@@ -90,8 +90,8 @@ def SBBXtoBX(data):
         # *wgtc* array) of the longest record, IORDR[1] the index of the
         # next longest record, and so on.
         # :todo: should probably import from a purpose built module.
-        from step3 import sort
-        IORDR = range(nsubbox)
+        from .step3 import sort
+        IORDR = list(range(nsubbox))
         sort(IORDR, lambda x,y: wgtc[y] - wgtc[x])
 
         # From here to the "for" loop over the cells (below) we are
@@ -108,7 +108,7 @@ def SBBXtoBX(data):
         for nc in IORDR[1:]:
             if wgtc[nc] >= parameters.subbox_min_valid:
                 series.combine(avgr, wtr, avg[nc], 1, 0,
-                           combined_n_months/12, parameters.box_min_overlap)
+                           int(combined_n_months/12), parameters.box_min_overlap)
 
         series.anomalize(avgr, parameters.subbox_reference_period,
                          combined_year_beg)
@@ -119,7 +119,7 @@ def SBBXtoBX(data):
     # cause it to run the final tail of its generator.
     # We expect the call to .next() to raise StopIteration, which is
     # just what we want.
-    data.next()
+    next(data)
     # Ordinarily we never reach here.
     assert 0, "Too many input records"
 
@@ -149,7 +149,7 @@ def zonav(boxed_data):
      13 global (all belts 0 to 7)
     """
 
-    (info, titlei) = boxed_data.next()
+    (info, titlei) = next(boxed_data)
     iyrbeg = info[5]
     monm = info[3]
     nyrsin = monm/12
@@ -180,7 +180,7 @@ def zonav(boxed_data):
             # The last element in the tuple is the boundaries of the
             # box.  We ignore it.
             box_series[box], box_weights[box], box_length[box], _ = (
-              boxed_data.next())
+              next(boxed_data))
         # total number of valid data in band's boxes
         total_length = sum(box_length)
         if total_length == 0:
@@ -203,7 +203,7 @@ def zonav(boxed_data):
                     # stop combining boxes.
                     break
                 series.combine(avg[band], wt[band],
-                  box_series[nr], box_weights[nr], 0, nyrsin,
+                  box_series[nr], box_weights[nr], 0, int(nyrsin),
                   parameters.box_min_overlap)
         series.anomalize(avg[band], parameters.box_reference_period, iyrbeg)
         lenz[band] = sum(valid(a) for a in avg[band])
@@ -213,7 +213,7 @@ def zonav(boxed_data):
     # partition of the boxes).  We check that the boxed_data stream is
     # exhausted and contains no more boxes.
     try:
-        boxed_data.next()
+        next(boxed_data)
         assert 0, "Too many boxes found"
     except StopIteration:
         # We fully expect to get here.
@@ -240,7 +240,7 @@ def zonav(boxed_data):
             band = iord[j]
             if band not in band_in_zone[zone]:
                 continue
-            series.combine(avgg, wtg, avg[band], wt[band], 0,nyrsin,
+            series.combine(avgg, wtg, avg[band], wt[band], 0, int(nyrsin),
                            parameters.box_min_overlap)
         series.anomalize(avgg, parameters.box_reference_period, iyrbeg)
         yield(avgg, wtg)
@@ -252,10 +252,10 @@ def sort_perm(a):
 
     The *indexes* array is such that `a[indexes[x]] == sorted[x]`.
     """
-    from step3 import sort
-    z = zip(a, range(len(a)))
+    from .step3 import sort
+    z = list(zip(a, list(range(len(a)))))
     sort(z, lambda x,y: y[0]-x[0])
-    sorted, indexes = zip(*z)
+    sorted, indexes = list(zip(*z))
     return sorted, indexes
 
 def zones():
@@ -301,7 +301,7 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
 
     zones = 14
 
-    (info, title) = zoned_averages.next()
+    (info, title) = next(zoned_averages)
     iyrbeg = info[5]
     monm = info[3]
     iyrs = monm // 12
@@ -317,12 +317,12 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
 
     # Collect zonal means.
     for zone in range(zones):
-        (tdata, twt) = zoned_averages.next()
+        (tdata, twt) = next(zoned_averages)
         # Regroup the *data* and *wt* series so that they come in blocks of 12.
         # Uses essentially the same trick as the `grouper()` recipe in
         # http://docs.python.org/library/itertools.html#recipes
-        data[zone] = zip(*[iter(tdata)]*12)
-        wt[zone] = zip(*[iter(twt)]*12)
+        data[zone] = list(zip(*[iter(tdata)]*12))
+        wt[zone] = list(zip(*[iter(twt)]*12))
 
     # Find (compute) the annual means.
     for zone in range(zones):
@@ -402,7 +402,7 @@ def ensure_weight(data):
     if the ocean record is to be used.
     """
 
-    meta = data.next()
+    meta = next(data)
     maskmeta, landmeta, oceanmeta = meta
     if maskmeta:
         yield meta

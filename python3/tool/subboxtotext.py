@@ -74,7 +74,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.getcwd(),'code'))
-import fort
+from . import fort
 
 def totext(file, output=sys.stdout, log=sys.stderr, metaonly=False,
   bos='>', trimmed='fromfile'):
@@ -109,8 +109,8 @@ def totext(file, output=sys.stdout, log=sys.stderr, metaonly=False,
     # Number of words in header, preceding title.
     n = 8
     info = struct.unpack(bos + ('%di' % n), r[:n*w])
-    print info
-    print r[n*w:]
+    print(info)
+    print(r[n*w:])
     yrbeg = info[5]
     mavg = info[2]
     km = 1
@@ -118,7 +118,7 @@ def totext(file, output=sys.stdout, log=sys.stderr, metaonly=False,
         km = 12
     if trimmed == 'fromfile':
         trimmed = info[0] != 1
-        print >>log, "Determined that trimmed=%s from file." % trimmed
+        print("Determined that trimmed=%s from file." % trimmed, file=log)
 
     for r in f:
         if trimmed:
@@ -128,7 +128,7 @@ def totext(file, output=sys.stdout, log=sys.stderr, metaonly=False,
             meta = r[-7*w:]
             r = r[:-7*w]
         box = struct.unpack(bos + '4i', meta[:4*w])
-        box = tuple(map(lambda x: x/100.0, box))
+        box = tuple([x/100.0 for x in box])
         nstns, nstmns = struct.unpack(bos + '2I', meta[4*w:6*w])
         d = struct.unpack(bos + 'f', meta[6*w:])[0]
         loc = '%+06.2f%+06.2f%+07.2f%+07.2f' % box

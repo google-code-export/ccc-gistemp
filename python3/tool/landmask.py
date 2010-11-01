@@ -25,7 +25,7 @@ http://islscp2.sesda.com/ISLSCP2_1/html_pages/groups/ancillary/land_water_masks_
 import math
 
 # Clear Climate Code
-import extend_path
+from . import extend_path
 from code import eqarea
 from code import giss_data
 
@@ -72,7 +72,7 @@ def grid(inp):
     class Struct:
         pass
     gridded = Struct()
-    gridded.a = [map(int, row.split()) for row in inp]
+    gridded.a = [list(map(int, row.split())) for row in inp]
     gridded.w = len(gridded.a[0])
     gridded.h = len(gridded.a)
     gridded.resolution = 360.0/gridded.w
@@ -86,7 +86,7 @@ def main(argv=None):
 
     arg = argv[1:]
     if not arg:
-        print __doc__
+        print(__doc__)
         return 2
 
     maskit(open(arg[0], 'rU'), sys.stdout)

@@ -44,8 +44,8 @@ USHCN data:
 import os
 
 # Clear Climate Code
-from giss_data import valid
-import parameters
+from .giss_data import valid
+from . import parameters
 
 log = open(os.path.join('log', 'step1.log'), 'w')
 
@@ -54,7 +54,7 @@ def calc_monthly_USHCN_offsets(u_record, g_record):
                                         u_record.last_year)
     g_years = g_record.get_set_of_years(parameters.USHCN_offset_start_year,
                                         u_record.last_year)
-    reversed_year_pairs = list(reversed(zip(u_years, g_years)))
+    reversed_year_pairs = list(reversed(list(zip(u_years, g_years))))
 
     diffs = [0.0] * 12
     for month in range(12):
@@ -80,7 +80,7 @@ def adjust_USHCN(ushcn_records, ghcn_records):
     are no such records, but may be if subsets are created by hand).
     """
 
-    print "Adjust USHCN records"
+    print("Adjust USHCN records")
 
     def adj(t, d):
         if valid(t):
@@ -90,7 +90,7 @@ def adjust_USHCN(ushcn_records, ghcn_records):
     # Count of USHCN records that have no GHCN counterpart.
     count_ushcn_only = 0
     # For each USHCN record look for a corresponding GHCN record.
-    for key, u_record in ushcn_records.iteritems():
+    for key, u_record in ushcn_records.items():
         g_record = ghcn_records.get(key, None)
         if g_record is None:
             count_ushcn_only += 1
@@ -113,21 +113,21 @@ def adjust_USHCN(ushcn_records, ghcn_records):
         del ghcn_records[key]
 
     if count_ushcn_only:
-        print count_ushcn_only, "USHCN records had no GHCN counterpart."
+        print(count_ushcn_only, "USHCN records had no GHCN counterpart.")
 
 
 def correct_Hohenpeissenberg(ghcn_records, hohenpeissenberg_dict):
     """Replace Hohenpeissenberg data from 1880 to 2002 in the GHCN
     dataset with the priv. comm. data."""
-    print "Correct the GHCN Hohenpeissenberg record."
+    print("Correct the GHCN Hohenpeissenberg record.")
 
     # We expect the hohenpeissenberg_dict to contain a single record.
     # The assignment will raise an exception if this assumption fails.
-    (key,hohenpeissenberg), = hohenpeissenberg_dict.items()
+    (key,hohenpeissenberg), = list(hohenpeissenberg_dict.items())
     del hohenpeissenberg_dict[key]
     cut = hohenpeissenberg.last_year + 1
 
-    for record in ghcn_records.itervalues():
+    for record in ghcn_records.values():
         if record.station_uid == hohenpeissenberg.station_uid:
             # Extract the data for the years more recent than the priv.
             # comm. data.
@@ -142,7 +142,7 @@ def correct_Hohenpeissenberg(ghcn_records, hohenpeissenberg_dict):
                 last_year = record.last_year
                 record.set_series(hohenpeissenberg.first_month,
                                   hohenpeissenberg.series)
-                for i, year in enumerate(range(cut, last_year + 1)):
+                for i, year in enumerate(list(range(cut, last_year + 1))):
                     record.add_year(year, new_data[i * 12:(i + 1) * 12])
 
             else:
@@ -158,7 +158,7 @@ def discard_contig_us(records):
     stations after this range are Pacific Ocean islands.
     """
 
-    for uid in records.keys():
+    for uid in list(records.keys()):
         assert len(uid) == 12
         if '425710000000' <= uid < '425900000000':
             # Note: records.keys() produces a fresh list and that's
@@ -186,7 +186,7 @@ def step0(input):
     # Read each data input into dictionary form.
     data = {}
     for source in sources:
-        print "Load %s records" % source.upper()
+        print("Load %s records" % source.upper())
         data[source] = asdict(input.open(source))
 
     # If we're using GHCN (and we usually are) then we...
@@ -203,13 +203,13 @@ def step0(input):
 
     # Join all data sources together.
     records = {}
-    for d in data.values():
+    for d in list(data.values()):
         records.update(d)
 
     # We sort here - as does GISTEMP - so that all the records for a
     # given 11-digit station ID are grouped together, ready for
     # combining in the next step.
-    for _, record in sorted(records.iteritems()):
+    for _, record in sorted(records.items()):
         if record:
             yield record
 

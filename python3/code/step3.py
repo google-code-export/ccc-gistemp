@@ -10,11 +10,11 @@
 Python code reproducing the STEP3 part of the GISTEMP algorithm.
 """
 
-import eqarea
-import giss_data
-import parameters
-import series
-from giss_data import MISSING, valid, invalid
+from . import eqarea
+from . import giss_data
+from . import parameters
+from . import series
+from .giss_data import MISSING, valid, invalid
 
 import math
 # http://docs.python.org/release/2.4.4/lib/module-os.path.html
@@ -157,7 +157,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
     """
 
     # Clear Climate Code
-    import earth # required for radius.
+    from . import earth # required for radius.
 
     station_records = list(station_records)
 

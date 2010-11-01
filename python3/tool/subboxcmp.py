@@ -29,7 +29,7 @@
 # header.  Thus the records corresponding to subboxes are from 1 to 8000
 
 sys.path.append(os.path.join(os.getcwd(),'code'))
-import fort
+from . import fort
 import struct
 import sys
 

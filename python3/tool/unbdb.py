@@ -13,19 +13,19 @@ def unbdb(file):
     txt_file = file + '.txt'
     db_file = file + '.bdb'
     db = bsddb.hashopen(db_file, 'r')
-    print "reading", db_file
+    print("reading", db_file)
     f = open(txt_file, 'w')
-    print "creating", txt_file
+    print("creating", txt_file)
     ids = db['IDS'].split()
     ids.sort()
     count = 0
     for id in ids:
         count = count + 1
         if count % 1000 == 0:
-            print count
+            print(count)
         s = db[id]
         st = stationstring.new(s)
         f.write(st.to_text(id))
-    print count
+    print(count)
     f.close()
     db.close()

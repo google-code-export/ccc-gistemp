@@ -58,7 +58,7 @@ def grid(inp):
     class Struct:
         pass
     gridded = Struct()
-    gridded.a = [map(int, row.split()) for row in inp]
+    gridded.a = [list(map(int, row.split())) for row in inp]
     gridded.w = len(gridded.a[0])
     gridded.h = len(gridded.a)
     gridded.resolution = 360.0/gridded.w
@@ -74,7 +74,7 @@ def main(argv=None):
     k = {}
     opt,arg = getopt.getopt(argv[1:], '', ['binary'])
     if not arg:
-        print __doc__
+        print(__doc__)
         return 2
     for o,v in opt:
         if o == '--binary':

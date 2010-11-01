@@ -20,7 +20,7 @@ try:
 except importError:
     from md5 import md5 # For older versions of Python
 
-import fetch
+from . import fetch
 
 
 #: The sub-directory where the 'official' test data lives.
@@ -223,7 +223,7 @@ def main(args):
                                        ['help', 'gen-md5-sums', 'check-md5-sums'])
             for o, a in opts:
                 if o in ('-h', '--help'):
-                    print __doc__
+                    print(__doc__)
                     return 0
                 elif o in ('-g', '--gen-md5-sums'):
                     gen_md5_sums = True
@@ -231,7 +231,7 @@ def main(args):
                     check_md5_sums = True
                 else:
                     raise Fatal("Unsupported option: %s" % o)
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Fatal(str(msg))
 
         if gen_md5_sums:
@@ -241,7 +241,7 @@ def main(args):
         else:
             install_and_check_test_files()
         return 0
-    except Fatal, err:
+    except Fatal as err:
         sys.stderr.write(err.msg)
         sys.stderr.write('\n')
         return 2

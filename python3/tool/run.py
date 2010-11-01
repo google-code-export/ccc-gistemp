@@ -25,8 +25,8 @@ import re
 import sys
 
 # Clear Climate Code
-import extend_path
-import giss_io
+from . import extend_path
+from . import giss_io
 
 class Fatal(Exception):
     pass
@@ -38,7 +38,7 @@ class Fatal(Exception):
 logfile = sys.stdout
 
 def log(msg):
-    print >>logfile, msg
+    print(msg, file=logfile)
 
 def mkdir(path):
     """mkdir(PATH): create the directory PATH, and all intermediate-level
@@ -110,7 +110,7 @@ def vischeck(data):
     for _ in data:
         pass
     log("... running vischeck")
-    import vischeck
+    from . import vischeck
     vischeck.chartit(
       [open(os.path.join('result', 'GLB.Ts.ho2.GHCN.CL.PA.txt'))],
       out = open(os.path.join('result', 'google-chart.url'), 'w'))
@@ -122,7 +122,7 @@ def parse_steps(steps):
     """Parse the -s, steps, option.  Produces a list of strings."""
     steps = steps.strip()
     if not steps:
-        return map(str, range(0, 6))
+        return list(map(str, list(range(0, 6))))
     result = set()
     for part in steps.split(','):
         # Part can be integer number with an optional letter suffix...
@@ -180,7 +180,7 @@ def update_parameters(parm):
         except ValueError:
             raise Fatal("Can't understand parameter option: %r" % p)
         if not hasattr(parameters, key):
-            print "Ignoring unknown parameter %r" % key
+            print("Ignoring unknown parameter %r" % key)
             continue
         # Coerce value, a string, to the same type as the existing parameter
         # value.  That works nicely for strings, ints, and floats...
@@ -218,7 +218,7 @@ def main(argv=None):
                         "to %s and try again." % rootdir)
 
         # Carry out preflight checks and fetch missing files.
-        import preflight
+        from . import preflight
         preflight.checkit(sys.stderr)
 
         # Create all the temporary directories we're going to use.
@@ -238,7 +238,7 @@ def main(argv=None):
         # Record start time now, and ending times for each step.
         start_time = time.time()
 
-        cannot = [s for s in step_list if not step_fn.has_key(s)]
+        cannot = [s for s in step_list if s not in step_fn]
         if cannot:
             raise Fatal("Can't run steps %s" % str(cannot))
 
@@ -270,7 +270,7 @@ def main(argv=None):
         log("Run took %.1f seconds" % (end_time - start_time))
 
         return 0
-    except Fatal, err:
+    except Fatal as err:
         sys.stderr.write(str(err))
         sys.stderr.write('\n')
         return 2

@@ -71,7 +71,7 @@ import sys
 # Allows imports from the code directory.
 sys.path.append(os.path.join(os.getcwd(),'code'))
 # Clear Climate Code
-import fort
+from . import fort
 
 # Move somewhere else?
 def iso6709(lat, lon, height=None):
@@ -178,7 +178,7 @@ def totext(file, output=sys.stdout, error=sys.stderr, metaflag=False):
                 if datum == bad:
                     return -9999
                 return datum
-            data = map(changebad, data)
+            data = list(map(changebad, data))
             for y,yeardata in enumerate(data[i:i+12]
                                         for i in range(0,len(data),12)):
                 output.write('%s%d' % (id, year + y))

@@ -99,7 +99,7 @@ def checkit(log):
         log.write('Attempting to fetch missing files: %s\n' %
             ' '.join(missing))
         # Call fetch.py as if it were a program.
-        import fetch
+        from . import fetch
         fetch.main(argv=['fetch'] + missing)
         missing = missing_files(all)
         if missing:

@@ -6,10 +6,10 @@
 #
 # David Jones, Ravenbrook Limited, 2010-03-12
 
-import extend_path
+from . import extend_path
 
 # Clear Climate Code
-import giss_io
+from . import giss_io
 
 def convert(inp, out):
     """Convert a file inp from subbox to V2 mean format."""
@@ -21,7 +21,7 @@ def convert(inp, out):
 
     subbox = iter(giss_io.SubboxReader(inp))
     # First record is metadata, which we ignore.
-    subbox.next()
+    next(subbox)
     for record in subbox:
         lat,lon = eqarea.centre(record.box)
         record.uid = '%+05.1f%+06.1fC' % (lat,lon)

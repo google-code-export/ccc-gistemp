@@ -13,7 +13,7 @@
 # compatible versions.
 
 # Ravenbrook
-import fort
+from . import fort
 # http://www.python.org/doc/2.3.5/lib/module-struct.html
 import struct
 # http://www.python.org/doc/2.3.5/lib/module-sys.html

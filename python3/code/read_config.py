@@ -54,10 +54,10 @@ def get_changes_dict():
         split_line = line.split()
         id = split_line[0]
         try:
-            year1, year2 = map(int, split_line[-1].split("-"))
+            year1, year2 = list(map(int, split_line[-1].split("-")))
             val = ("years", year1, year2)
         except ValueError:
-            year, month = map(int, split_line[-1].split("/"))
+            year, month = list(map(int, split_line[-1].split("/")))
             val = ("month", year, month)
         dict[id] = dict.get(id,[])
         dict[id].append(val)
