@@ -11,8 +11,8 @@ __docformat__ = "restructuredtext"
 import sys
 import itertools
 
-from giss_data import MISSING, valid, invalid
-import parameters
+from .giss_data import MISSING, valid, invalid
+from . import parameters
 from tool import giss_io
 
 
@@ -31,7 +31,7 @@ def merge_ocean(ocean, sst, dates):
     last_new_month = dates[-1][1]
 
     reader = iter(ocean)
-    meta = reader.next()
+    meta = next(reader)
     meta.monm = 12 * (last_new_year - IYRBEG + 1)
     meta.monm4 = meta.monm + 8
     meta.title = (meta.title[:40] +
@@ -88,4 +88,4 @@ def step4(data):
         sst, dates = monthlies
         ocean = merge_ocean(ocean, sst, dates)
 
-    return itertools.izip(land, ocean)
+    return zip(land, ocean)

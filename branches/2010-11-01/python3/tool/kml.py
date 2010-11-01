@@ -18,18 +18,18 @@ those bounds.
 """
 
 # Clear Climate Code
-import extend_path
+from . import extend_path
 # Clear Climate Code
-from giss_io import MISSING
+from .giss_io import MISSING
 
 
 # Images for the icons that denote the "urban flag" in the v2.mean file;
 # this flag is either R (rural), S (semi-urban), U (urban).
-urbanicon = dict(zip('RSU', """
+urbanicon = dict(list(zip('RSU', """
 http://google-maps-icons.googlecode.com/files/forest.png
 http://google-maps-icons.googlecode.com/files/home.png
 http://google-maps-icons.googlecode.com/files/factory.png
-""".split()))
+""".split())))
 
 def xmlquote(x):
     import re
@@ -73,9 +73,9 @@ def kml(data, meta, out, lat=(-90,91), lon=(-180,181)):
     # http://code.google.com/apis/kml/documentation/kml_tut.html
     # and
     # http://code.google.com/apis/kml/documentation/kmlreference.html
-    print '<?xml version="1.0" encoding="UTF-8"?>'
-    print '<kml xmlns="http://www.opengis.net/kml/2.2">'
-    print '<Document>'
+    print('<?xml version="1.0" encoding="UTF-8"?>')
+    print('<kml xmlns="http://www.opengis.net/kml/2.2">')
+    print('<Document>')
 
     annual_data = station_annual_anomalies(data)
     styled = set()
@@ -102,15 +102,15 @@ def kml(data, meta, out, lat=(-90,91), lon=(-180,181)):
             # Assume normal 11-digit GHCN station.
             # todo, use metadata here, for urban/airport etc.
             url = chart_anom(anom)
-            print """
+            print("""
 <Style id="station%(id)s">
   <IconStyle><Icon>
     <href>%(url)s</href>
   </Icon></IconStyle>
-</Style>""" % dict(id=id11, url=xmlquote(url))
+</Style>""" % dict(id=id11, url=xmlquote(url)))
             styled.add(id11)
 
-    for stationid,l in meta.items():
+    for stationid,l in list(meta.items()):
         # See ftp.ncdc.noaa.gov/v2.read.inv.f
         # A 30 character name field.  It often contains a country and
         # lots of internal spaces.  We reduce all multiples of SPACE
@@ -134,16 +134,16 @@ def kml(data, meta, out, lat=(-90,91), lon=(-180,181)):
         if stationid not in styled:
             continue
 
-        print '<Placemark>'
-        print '<name>%(name)s  %(stationid)s</name>' % locals()
-        print '<description>%s</description>' % stationid
-        print '<Point><coordinates>'
-        print "%(east)s,%(north)s" % locals()
-        print '</coordinates></Point>'
-        print '<styleUrl>#station%s</styleUrl>' % stationid
-        print '</Placemark>'
-    print '</Document>'
-    print '</kml>'
+        print('<Placemark>')
+        print('<name>%(name)s  %(stationid)s</name>' % locals())
+        print('<description>%s</description>' % stationid)
+        print('<Point><coordinates>')
+        print("%(east)s,%(north)s" % locals())
+        print('</coordinates></Point>')
+        print('<styleUrl>#station%s</styleUrl>' % stationid)
+        print('</Placemark>')
+    print('</Document>')
+    print('</kml>')
 
 def station_annual_anomalies(data):
     """*data* should be a v2.mean file.  Return a dictionary that
@@ -151,7 +151,7 @@ def station_annual_anomalies(data):
     series.  All the data series start in 1880."""
 
     from code import series
-    from giss_io import V2MeanReader
+    from .giss_io import V2MeanReader
 
     return ((record.uid, series.monthly_annual(record.series)[1])
       for record in V2MeanReader(data, year_min=1880))
@@ -184,7 +184,7 @@ def chart_anom(anom):
 
 def usage():
     import sys
-    print >>sys.stderr, __doc__
+    print(__doc__, file=sys.stderr)
 
 def main(argv=None):
     import sys
@@ -200,9 +200,9 @@ def main(argv=None):
         return usage()
     for o,v in opts:
         if o == '--longitude':
-            key['lon'] = map(float, v.split(','))
+            key['lon'] = list(map(float, v.split(',')))
         elif o == '--latitude':
-            key['lat'] = map(float, v.split(','))
+            key['lat'] = list(map(float, v.split(',')))
 
     if arg:
         d = arg[0]

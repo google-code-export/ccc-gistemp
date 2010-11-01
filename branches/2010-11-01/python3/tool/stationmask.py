@@ -16,7 +16,7 @@ that cell, any other value includes it).
 """
 
 # Clear Climate Code
-import extend_path
+from . import extend_path
 from code import eqarea
 
 def stationmask(inp, out, inv, dribble):
@@ -25,12 +25,12 @@ def stationmask(inp, out, inv, dribble):
     """
 
     centres = [row[:11] for row in inp if float(row[16:21])]
-    print >> dribble, len(centres), "centres"
+    print(len(centres), "centres", file=dribble)
     centres = [(float(c[:5]),float(c[5:11])) for c in centres]
     boxes = eqarea.grid8k()
     selectboxes = [box for box in boxes if
       [centre for centre in centres if boxcontains(box, centre)]]
-    print >> dribble, len(selectboxes), "boxes"
+    print(len(selectboxes), "boxes", file=dribble)
     stations = list(inv)
     selected = []
     for line in stations:

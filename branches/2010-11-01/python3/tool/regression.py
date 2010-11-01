@@ -25,11 +25,11 @@ import shutil
 import getopt
 
 # Make sure we can import from other CCC packages.
-import extend_path
+from . import extend_path
 
-import ref_test_data
-import run
-import compare_results
+from . import ref_test_data
+from . import run
+from . import compare_results
 
 #: The path of a temporary directory used to save backups of files
 #: that get modified while the script is running.
@@ -82,7 +82,7 @@ def rm_safe():
     sys.stdout.write("Removing %s directory...\n" % safe_dir)
     try:
         os.rmdir(safe_dir)
-    except OSError, exc:
+    except OSError as exc:
         sys.stderr.write("BAD CLEANUP: Could not remove %s\n" % safe_dir)
         sys.stderr.write("             %s\n" % exc)
 
@@ -95,7 +95,7 @@ def restore_inputs():
     source = os.path.join(safe_dir, "input")
     try:
         shutil.move(source, "input")
-    except (OSError, shutil.Error), exc:
+    except (OSError, shutil.Error) as exc:
         sys.stderr.write("BAD CLEANUP: Failed to move %s to %s\n" % (
             source, "input", dest))
         sys.sdterr.write("             %s\n" % exc)
@@ -108,7 +108,7 @@ def remove_test_input():
     sys.stdout.write("Removing test input directory...\n")
     try:
         shutil.rmtree("input")
-    except (OSError, shutil.Error), exc:
+    except (OSError, shutil.Error) as exc:
         sys.sdterr.write("BAD CLEANUP: Failed to remove input\n")
         sys.sdterr.write("             %s\n" % exc)
 
@@ -123,9 +123,9 @@ def clean_up():
     for action in reversed(undo_actions):
         try:
             action()
-        except Exception, exc:
+        except Exception as exc:
             sys.stderr.write("BAD CLEANUP: Call to %s failed\n"
-                    % action.func_name)
+                    % action.__name__)
             sys.stderr.write("             %s\n" % exc)
 
 
@@ -139,7 +139,7 @@ def install_inputs():
     sys.stdout.write("Moving directory %r to %r...\n" % ("input", dest))
     try:
         shutil.move("input", dest)
-    except (OSError, shutil.Error), exc:
+    except (OSError, shutil.Error) as exc:
         sys.sdterr.write("Failed to move %r to %r\n" % ("input", dest))
         sys.sdterr.write("    %s\n" % exc)
         return 1
@@ -149,7 +149,7 @@ def install_inputs():
     sys.stdout.write("Copying directory %r to %r...\n" % (source, "input"))
     try:
         shutil.copytree(source, "input")
-    except (OSError, shutil.Error), exc:
+    except (OSError, shutil.Error) as exc:
         sys.sdterr.write("Failed to move %r to %r\n" % (source, "input"))
         sys.sdterr.write("    %s\n" % exc)
         return 1
@@ -200,7 +200,7 @@ def regression(skip_run = False):
     try:
         os.mkdir(safe_dir)
         undo_actions.append(rm_safe)
-    except OSError, exc:
+    except OSError as exc:
         sys.exit(str(exc))
 
     try:
@@ -227,19 +227,19 @@ def main(argv = None):
                                        ['help', 'skip-run'])
             for o, a in opts:
                 if o in ('-h', '--help'):
-                    print __doc__
+                    print(__doc__)
                     return 0
                 elif o in ('-s', '--skip-run'):
                     skip_run = True
                 else:
                     raise Fatal("Unsupported option: %s" % o)
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Fatal(str(msg))
 
         # Do the comparison.
         regression(skip_run)
         return 0
-    except Fatal, err:
+    except Fatal as err:
         sys.stderr.write(err.msg)
         sys.stderr.write('\n')
         return 2

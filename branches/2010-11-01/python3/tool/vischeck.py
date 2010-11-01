@@ -126,13 +126,13 @@ def asgooglechartURL(seq, options={}):
     data = [list(s) for s in seq]
     ymin,ymax = reasonable_yscale(data)
 
-    yearmin = min(map(lambda p:p[0], itertools.chain(*data)))
-    yearmax = max(map(lambda p:p[0], itertools.chain(*data)))
+    yearmin = min([p[0] for p in itertools.chain(*data)])
+    yearmax = max([p[0] for p in itertools.chain(*data)])
     data = [pad(s, yearmin, yearmax) for s in data]
     # Let y be the list of years for the chart legend.  We include
     # the first year of the series, the last year, and every decade
     # beginning.
-    y = map(lambda x:x[0], data[0])
+    y = [x[0] for x in data[0]]
     for i in range(1,len(y)-1):
         if y[i]%10:
             y[i]=''
@@ -206,9 +206,9 @@ def pad(data, yearmin, yearmax):
 
     assert yearmin <= t0 <= t1 <= yearmax
     nonelots = [None]*(yearmax-yearmin+1)
-    return (zip(range(yearmin, t0), nonelots) +
+    return (list(zip(list(range(yearmin, t0)), nonelots)) +
       data +
-      zip(range(t1+1, yearmax+1), nonelots))
+      list(zip(list(range(t1+1, yearmax+1)), nonelots)))
 
 def reasonable_yscale(data):
     """Examine the data and return a reasonable y scale as a min and max
@@ -247,14 +247,14 @@ def slope_markers(slopes, coefficients, colours):
     """Create the markers to denote slopes / trends."""
 
     import itertools
-    import urllib
+    import urllib.request, urllib.parse, urllib.error
 
-    l = [u'Trend in \N{DEGREE SIGN}C/century (R\N{SUPERSCRIPT TWO})'.encode('utf-8')] + [
+    l = ['Trend in \N{DEGREE SIGN}C/century (R\N{SUPERSCRIPT TWO})'.encode('utf-8')] + [
       format_slope(['full','30-year'], s, c)
       for s, c in zip(slopes, coefficients)]
     colours = ['000000'] + colours
     return [
-      urllib.quote_plus('@t%s,%s,0,%.2f:%.2f,12' % (
+      urllib.parse.quote_plus('@t%s,%s,0,%.2f:%.2f,12' % (
         text,
         colour,
         0.4, 0.2 - 0.05*row)) for text, colour, row in
@@ -308,7 +308,7 @@ def chartsingle(l):
     """Take a list and return a URL fragment for its Google
     chart."""
 
-    d = map(lambda x:x[1], l)
+    d = [x[1] for x in l]
 
     # Google Chart API says "Values less than the specified minimum are
     # considered missing values".  So we don't actually do any scaling
@@ -318,7 +318,7 @@ def chartsingle(l):
             return -999
         return x
 
-    d = map(scale, d)
+    d = list(map(scale, d))
     return ','.join(map(str, d))
 
 import sys
@@ -331,7 +331,7 @@ def chartit(fs, options={}, out=sys.stdout):
     """
 
     import re
-    import urllib
+    import urllib.request, urllib.parse, urllib.error
 
     k = {}
     if 'extract' in options:
@@ -341,13 +341,13 @@ def chartit(fs, options={}, out=sys.stdout):
         """Extract anomalies from file."""
         return anomalies(f, **k)
 
-    url = asgooglechartURL(map(anom, fs), options)
-    print >>out, url
+    url = asgooglechartURL(list(map(anom, fs)), options)
+    print(url, file=out)
 
 def main(argv=None):
     import getopt
     # http://www.python.org/doc/2.4.4/lib/module-urllib.html
-    import urllib
+    import urllib.request, urllib.parse, urllib.error
 
     if argv is None:
         argv = sys.argv
@@ -356,9 +356,9 @@ def main(argv=None):
     try:
         opt,arg = getopt.getopt(argv[1:], 'x:o:',
           ['offset=', 'size=', 'colour='])
-    except getopt.GetoptError, e:
-        print >> sys.stderr, e.msg
-        print >> sys.stderr, __doc__
+    except getopt.GetoptError as e:
+        print(e.msg, file=sys.stderr)
+        print(__doc__, file=sys.stderr)
         return 2
     for o,v in opt:
         if o in ('-o', '--offset'):
@@ -370,10 +370,10 @@ def main(argv=None):
         if o == '--colour':
             options['colour'] = v.split(',')
         if o == '-x':
-            options['extract'] = map(int, v.split(','))
+            options['extract'] = list(map(int, v.split(',')))
             
     if len(arg):
-        fs = map(urllib.urlopen, arg)
+        fs = list(map(urllib.request.urlopen, arg))
     else:
         fs = [sys.stdin]
     chartit(fs, options)

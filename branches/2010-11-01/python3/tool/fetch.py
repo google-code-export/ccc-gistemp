@@ -24,7 +24,7 @@ import getopt
 # http://www.python.org/doc/2.4.4/lib/module-sys.html
 import sys
 # http://www.python.org/doc/2.4.4/lib/module-urllib.html
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import re
 
@@ -32,14 +32,14 @@ import re
 # Conditionally import our modified tarfile for Python 2.4.x, 2.5, and
 # 2.5.1
 if sys.version_info[:3] <= (2, 5, 1):
-    import ccc_tarfile as tarfile
+    from . import ccc_tarfile as tarfile
 else:
     import tarfile
 # Same for zipfile.  We need the open method of a ZipFile object, but
 # that's only on Python 2.6 and above.  ccc_zipfile is a copy of the
 # Python zipfile module from 2.6 and happily it works on Python 2.4.
 if sys.version_info[:2] <= (2, 5):
-    import ccc_zipfile as zipfile
+    from . import ccc_zipfile as zipfile
 else:
     import zipfile
 
@@ -172,12 +172,12 @@ def fetch(files, prefix='input/', output=sys.stdout):
     )
     def addurl(d):
         """Add 'url' handler to all plain strings."""
-        for short, long in d.items():
-            if long[0] in special:
-                yield short, long
+        for short, int in list(d.items()):
+            if int[0] in special:
+                yield short, int
             else:
                 # Ordinary URL.
-                yield short, ['url', long]
+                yield short, ['url', int]
     place = dict(addurl(place))
     # Now make the *place* dictionary have short names both with and
     # without the compression suffix.
@@ -192,11 +192,11 @@ def fetch(files, prefix='input/', output=sys.stdout):
         # *name* is a dictionary that maps from short name, with and
         # without compression suffix, to the URL.
         name = {}
-        for short, long in d.items():
+        for short, int in list(d.items()):
             split = short.split('.')
             if split[-1].lower() in ['z','gz']:
-                yield '.'.join(split[:-1]), (long, short)
-            yield short, (long, short)
+                yield '.'.join(split[:-1]), (int, short)
+            yield short, (int, short)
     place = dict(removeZ(place))
     # *place* now maps from *name* to a (*long*, *short*) pair; only for
     # compression extensions are *name* and *short* different.
@@ -241,7 +241,7 @@ def fetch_url(l, prefix, output):
         # Make a local filename.
         local = os.path.join(prefix, name)
         output.write(name + ' ' + url + '\n')
-        urllib.urlretrieve(url, local, progress_hook(output))
+        urllib.request.urlretrieve(url, local, progress_hook(output))
         output.write('\n')
         output.flush()
 
@@ -265,13 +265,14 @@ def fetch_tar(l, prefix, output):
         else:
             tar_compression_type = ext[1:]
         name = url.split('/')[-1]
-        fetch_url([[['url', url], name]], prefix, output)
+        if not os.path.exists(os.path.join(prefix, name)):
+            fetch_url([[['url', url], name]], prefix, output) 
         tar = open(os.path.join(prefix, name), 'rb')
-        members = map(lambda x: x[0][2], group)
-        print >>output, 'Extracting members from', url, '...'
+        members = [x[0][2] for x in group]
+        print('Extracting members from', url, '...', file=output)
         fetch_from_tar(tar, members, prefix, output,
             compression_type=tar_compression_type)
-        print >>output, "  ... finished extracting"
+        print("  ... finished extracting", file=output)
 
 def fetch_zip(l, prefix, output):
     """(helper function used by :meth:`fetch`)
@@ -286,21 +287,22 @@ def fetch_zip(l, prefix, output):
     # Group by URL, as per fetch_tar.
     for url,group in itertools.groupby(l, key=lambda x: x[0][1]):
         name = url.split('/')[-1]
-        fetch_url([[['url', url], name]], prefix, output)
+        if not os.path.exists(os.path.join(prefix, name)):
+            fetch_url([[['url', url], name]], prefix, output) 
         z = zipfile.ZipFile(os.path.join(prefix, name))
-        print >>output, 'Extracting members from', url, '...'
+        print('ZIP Extracting members from', url, '...', file=output)
         for place,name in group:
             # Only works for text files.
             dest = open(os.path.join(prefix, name), 'w')
             src = z.open(place[2])
             while 1:
                 s = src.read(9999)
-                if s == '':
+                if len(s) == 0:
                     break
-                dest.write(s)
+                dest.write(s.decode('utf-8'))
             dest.close()
             src.close()
-        print >>output, "  ... finished extracting"
+        print("  ... finished extracting", file=output)
 
 def fetch_ushcn(l, prefix, output):
     """(helper function used by :meth:`fetch`)
@@ -328,7 +330,7 @@ def fetch_ushcn(l, prefix, output):
         remote = ftplib.FTP(host, 'ftp', 'ccc-staff@ravenbrook.com')
         remote.cwd(directory)
         dir = remote.nlst()
-        good = filter(file.match, dir)
+        good = list(filter(file.match, dir))
         good.sort()
         # Most recent file sorts to the end of the list, because dates
         # are in the form YYYYMM.
@@ -363,7 +365,7 @@ def fetch_from_tar(inp, want, prefix='input', log=sys.stdout,
             short = info.name.split('/')[-1]
             local = os.path.join(prefix, short)
             out = open(local, 'wb')
-            print >>log, "  ... %s from %s." % (short, info.name)
+            print("  ... %s from %s." % (short, info.name), file=log)
 
             # The following used to be simply
             # ``out.writelines(tar.extractfile(info))``, but the Python2.4
@@ -409,14 +411,14 @@ def main(argv=None):
             opts, args = getopt.getopt(argv[1:], "", ["help"])
             for o,a in opts:
                 if o in ('--help',):
-                    print __doc__
+                    print(__doc__)
                     return 0
-        except getopt.error, msg:
+        except getopt.error as msg:
              raise Usage(msg)
         fetch(args)
-    except Usage, err:
-        print >>sys.stderr, err.msg
-        print >>sys.stderr, "for help use --help"
+    except Usage as err:
+        print(err.msg, file=sys.stderr)
+        print("for help use --help", file=sys.stderr)
         return 2
     return 0
 

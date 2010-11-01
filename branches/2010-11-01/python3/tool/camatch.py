@@ -12,7 +12,7 @@ import json
 import math
 
 # Clear Climate Code
-import extend_path
+from . import extend_path
 from code import giss_data
 
 class Struct:
@@ -53,18 +53,18 @@ def match(cameta, cadata, ghcnmeta, ghcndata, table):
             ghcndata[ghcnst.uid])
         match.q = q
         wmo = match.cast['WMO Identifier'] or 'nowmo'
-        print match.type, wmo, castid, id12, \
-          "%.2f" % sep, "%4d" % overlap, q
+        print(match.type, wmo, castid, id12, \
+          "%.2f" % sep, "%4d" % overlap, q)
         if match.type == 'wmo' or match.q + match.sep < 1:
             newid = ghcnst.uid+'9'
             assert newid not in ghcndata[ghcnst.uid]
             table.write("%s %s\n" % (castid+'0', newid))
 
-    print "dropped stations", dropcount
-    print "kept stations", len(cadict)
-    print "WMO stations", wmocount
-    print "WMO match", wmomatch, "(of those) not near:", wmofar
-    print "LOCATION near", locnear
+    print("dropped stations", dropcount)
+    print("kept stations", len(cadict))
+    print("WMO stations", wmocount)
+    print("WMO match", wmomatch, "(of those) not near:", wmofar)
+    print("LOCATION near", locnear)
 
 def match_quality(reference, candidate):
     """See how closely the temperature data in *reference* matches the
@@ -74,7 +74,7 @@ def match_quality(reference, candidate):
 
     ref = as_monthly(reference)
     def scores():
-        for id12,record in candidate.items():
+        for id12,record in list(candidate.items()):
             rec = as_monthly(record)
             overlap, q = score(ref, rec)
             yield overlap, q, id12
@@ -104,7 +104,7 @@ def as_monthly(d):
     *r* where r['YYYY-MM'] gives the value for that month."""
 
     r = {}
-    for year,row in d.items():
+    for year,row in list(d.items()):
         for i in range(12):
             s = row[i*5:(i+1)*5]
             if s == '-9999':
@@ -125,7 +125,7 @@ def itermatches(cadict, ghcndict):
 
     global wmocount
 
-    for cast in cadict.values():
+    for cast in list(cadict.values()):
         result = Struct()
         result.cast = cast
         wmo = cast['WMO Identifier']
@@ -142,7 +142,7 @@ def itermatches(cadict, ghcndict):
                 yield result
                 continue
         result.type = 'loc'
-        nearest = min(ghcndict.values(),
+        nearest = min(list(ghcndict.values()),
           key=lambda s: locdist((lat,lon), (s.lat, s.lon)))
         result.ghcnst = nearest
         yield result
@@ -152,7 +152,7 @@ def drop_short(cadict, cadata):
     data."""
     global dropcount
     drops = []
-    for key,station in cadict.items():
+    for key,station in list(cadict.items()):
         id11 = station['id11']
         if id11 not in cadata:
             drops.append((key, 0))
@@ -163,7 +163,7 @@ def drop_short(cadict, cadata):
             drops.append((key, len(data)))
     for station,_ in drops:
         del cadict[station]
-    print drops
+    print(drops)
     dropcount = len(drops)
 
 def v2asdict(inp):
@@ -204,7 +204,7 @@ def locnear(a, b):
     """True when the two points (each a (lat,lon) pair are "near" each
     other.  In this case near means both lat and lon are within 0.01."""
     # Ignores issues at -180/+180
-    maxnorm = max(map(lambda x,y: x-y, a, b), key=abs)
+    maxnorm = max(list(map(lambda x,y: x-y, a, b)), key=abs)
     return maxnorm < 0.013
 
 def locdist(a, b):
@@ -212,8 +212,8 @@ def locdist(a, b):
     decimal degrees.  This function returns the angle between them, in
     decimal degrees (fractional degrees really)."""
 
-    a = map(math.radians, a)
-    b = map(math.radians, b)
+    a = list(map(math.radians, a))
+    b = list(map(math.radians, b))
 
     def toxyz(p):
         """Convert *p* specified as (lat,lon) in radians to x,y,z
@@ -224,7 +224,7 @@ def locdist(a, b):
         x = c*math.cos(lon)
         y = c*math.sin(lon)
         return x,y,z
-    a,b = map(toxyz, [a, b])
+    a,b = list(map(toxyz, [a, b]))
     # Use cosine rule to determine angle
     dot = sum(p*q for p,q in zip(a,b))
     # Clamp dot to avoid range error in math.acos due to tiny arithmetic

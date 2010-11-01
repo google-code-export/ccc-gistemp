@@ -44,10 +44,10 @@ import math
 import itertools
 
 # Clear Climate Code
-import read_config
-from giss_data import valid, invalid, MISSING, BASE_YEAR
-import parameters
-import series
+from . import read_config
+from .giss_data import valid, invalid, MISSING, BASE_YEAR
+from . import parameters
+from . import series
 
 
 comb_log = open('log/comb.log','w')
@@ -194,7 +194,7 @@ def get_longest(records):
     # here.  Going forwards, we should define the order more carefully.
 
     t = dict((record.uid, record) for record in records)
-    return max(t.values(), key=length)
+    return max(list(t.values()), key=length)
 
 def find_quintuples(sums, wgts, record, new_id, log):
     """The *sums* and *wgts* arrays are assumed to begin in the same
@@ -269,7 +269,7 @@ def adjust_helena(stream):
     helena_ds = read_config.get_helena_dict()
     for record in stream:
         id = record.uid
-        if helena_ds.has_key(id):
+        if id in helena_ds:
             series = record.series
             this_year, month, summand = helena_ds[id]
             begin = record.first_year
@@ -336,7 +336,7 @@ def alter_discont(data):
 
     alter_dict = read_config.get_alter_dict()
     for record in data:
-        if alter_dict.has_key(record.uid):
+        if record.uid in alter_dict:
             series = record.series
             (a_month, a_year, a_num) = alter_dict[record.uid]
             begin = record.first_year
@@ -362,7 +362,7 @@ def average(sums, counts):
 
     data = [MISSING] * (len(sums))
 
-    for i,(sum,count) in enumerate(zip(sums, counts)):
+    for i,(sum,count) in enumerate(list(zip(sums, counts))):
         if count:
             data[i] = float(sum) / count
 
@@ -405,7 +405,7 @@ def get_longest_overlap(target, begin, records):
     # For exact compatiblity with previous versions, we create a
     # temporary dict.
     t = dict((record.uid, record) for record in records)
-    for record in t.values():
+    for record in list(t.values()):
         common = [(rec_anom,anom)
           for rec_anom, anom in zip(record.ann_anoms, anoms)
           if valid(rec_anom) and valid(anom)]
@@ -461,15 +461,15 @@ def fresh_arrays(record, years):
     return sums, wgts
 
 
-def sigma(list):
+def sigma(alist):
     # Remove invalid (missing) data.
-    list = filter(valid, list)
-    if len(list) == 0:
+    alist = list(filter(valid, alist))
+    if len(alist) == 0:
         return MISSING
     # Two pass method ensures argument to sqrt is always positive.
-    mean = sum(list) / len(list)
-    sigma_squared = sum((x-mean)**2 for x in list)
-    return math.sqrt(sigma_squared/len(list))
+    mean = sum(alist) / len(alist)
+    sigma_squared = sum((x-mean)**2 for x in alist)
+    return math.sqrt(sigma_squared/len(alist))
 
 def get_actual_endpoints(wgts, begin):
     """For the array of weights in *wgts* return the first and last

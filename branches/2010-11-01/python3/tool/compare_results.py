@@ -38,8 +38,8 @@ import sys
 import xml.sax.saxutils
 # Clear Climate Code
 sys.path.append(os.path.join(os.getcwd(),'code'))
-import fort
-import vischeck
+from . import fort
+from . import vischeck
 
 class Fatal(Exception):
     def __init__(self, msg):
@@ -90,7 +90,7 @@ def box_series(f):
             return
         assert len(l) == nfields * 4
         data = struct.unpack('%s%df' % (bos, nmonths), l[:4 * nmonths])
-        for i in xrange(nmonths):
+        for i in range(nmonths):
             if data[i] != missing:
                 yield(((box, year + i / 12, i % 12), data[i]))
         box += 1
@@ -129,26 +129,26 @@ def stats(seq):
     assert seq
     n = float(len(seq))
     mean = sum(seq) / n
-    variance = sum(map(lambda x: (x - mean) ** 2, seq)) / n
+    variance = sum([(x - mean) ** 2 for x in seq]) / n
     return seq.count(0), n, mean, math.sqrt(variance)
 
 def difference(seqs, scale=1.0):
     """Return a sequence of differences between the second (data) items
     of the pairs in the two sequences *seqs*, multiplied by *scale*."""
     assert len(seqs) == 2
-    seqs = map(iter, seqs)
+    seqs = list(map(iter, seqs))
     newa = True
     newb = True
     while 1:
         if newa:
             try:
-                a = seqs[0].next()
+                a = next(seqs[0])
             except StopIteration:
                 a = None
             newa = False
         if newb:
             try:
-                b = seqs[1].next()
+                b = next(seqs[1])
             except StopIteration:
                 b = None
             newb = False
@@ -202,13 +202,13 @@ def distribution_url(d):
     bin_max = max(bins.keys())
 
     # Number of values in each bin.
-    d = map(lambda x: bins.get(x, 0), range(bin_min, bin_max + 1))
+    d = [bins.get(x, 0) for x in list(range(bin_min, bin_max + 1))]
     dmax = max(d)
 
     # Google chart documentation at http://code.google.com/apis/chart/
-    rx = '|'.join(map(lambda x: '%d' % x, range(bin_min, bin_max + 1)))
+    rx = '|'.join(['%d' % x for x in list(range(bin_min, bin_max + 1))])
     bin_count = bin_max - bin_min + 1
-    notex = '|'*(bin_count/2) + '(bin size %g)' % w
+    notex = '|'*int(bin_count/2) + '(bin size %g)' % w
     ry = '0,%d,%d' % (dmax, 10 ** math.floor(math.log10(dmax)))
     chart = [
         'chs=600x300', # Chart size (pixels).
@@ -230,11 +230,11 @@ def differences_url(anns):
     assert len(anns) == 2
 
     # Take difference.
-    d = map(lambda a: a[1], list(difference(anns, 0.01)))
+    d = [a[1] for a in list(difference(anns, 0.01))]
 
     # List of years
-    years = map(lambda a: a[0], anns[0])
-    assert years == map(lambda a: a[0], anns[1])
+    years = [a[0] for a in anns[0]]
+    assert years == [a[0] for a in anns[1]]
 
     # Google chart documentation at http://code.google.com/apis/chart/
     dmin = min(d)
@@ -259,13 +259,13 @@ def top(diffs, n, o, title, fmt = str):
     format the results.  Does not output any zeroes."""
     topn = sorted(diffs, key = lambda a: abs(a[1]), reverse = True)[:n]
     if topn[0][1] != 0:
-        print >>o, '<h3>%s</h3>' % title
-    print >>o, "<ol>"
+        print('<h3>%s</h3>' % title, file=o)
+    print("<ol>", file=o)
     for k, v in topn:
         if v == 0:
             break
-        print >>o, "<li>" + fmt(k, v)
-    print >>o, "</ol>"
+        print("<li>" + fmt(k, v), file=o)
+    print("</ol>", file=o)
 
 def compare(dirs, labels, o):
     """Compare results from the two directories in the sequence *dirs*,
@@ -276,13 +276,13 @@ def compare(dirs, labels, o):
 
     # XML-encode meta-characters &,<,>
     escape = xml.sax.saxutils.escape
-    labels = map(escape, labels)
+    labels = list(map(escape, labels))
 
     # Version of ``asmon`` that avoids yielding ``None``.
     asmon_values_only = lambda f: asmon(f, values_only=True)
 
     title = "Comparison of %s and %s" % tuple(dirs)
-    print >>o, """<!doctype HTML>
+    print("""<!doctype HTML>
 <html>
 <head>
 <title>%s</title>
@@ -290,7 +290,7 @@ def compare(dirs, labels, o):
 <body>
 <h1>%s</h1>
 <p>Generated: %s</p>
-""" % (title, title, datetime.datetime.now())
+""" % (title, title, datetime.datetime.now()), file=o)
 
     anomaly_file = '%s.Ts.ho2.GHCN.CL.PA.txt'
     box_file = 'BX.Ts.ho2.GHCN.CL.PA.1200'
@@ -300,46 +300,46 @@ def compare(dirs, labels, o):
         ('southern hemisphere', 'SH'),
     ]:
         # Annual series
-        fs = map(lambda d: open(os.path.join(d, anomaly_file % code), 'r'), dirs)
-        anns = map(list, map(asann_values_only, fs))
+        fs = [open(os.path.join(d, anomaly_file % code), 'r') for d in dirs]
+        anns = list(map(list, list(map(asann_values_only, fs))))
         url = vischeck.asgooglechartURL(anns)
-        print >>o, '<h2>%s annual temperature anomaly</h2>' % region.capitalize()
-        print >>o, '<p>%s in red, %s in black.</p>' % tuple(labels) 
-        print >>o, '<img src="%s">' % escape(url)
-        print >>o, ('<h3>%s annual residues (%s - %s)</h3>'
-                    % (region.capitalize(), labels[0], labels[1]))
-        print >>o, '<img src="%s">' % escape(differences_url(anns))
+        print('<h2>%s annual temperature anomaly</h2>' % region.capitalize(), file=o)
+        print('<p>%s in red, %s in black.</p>' % tuple(labels), file=o) 
+        print('<img src="%s">' % escape(url), file=o)
+        print(('<h3>%s annual residues (%s - %s)</h3>'
+                    % (region.capitalize(), labels[0], labels[1])), file=o)
+        print('<img src="%s">' % escape(differences_url(anns)), file=o)
 
         diffs = list(difference(anns, 0.01))
-        d = map(lambda a: a[1], diffs)
-        print >>o, '<h3>%s annual residue distribution</h3>' % region.capitalize()
-        print >>o, '<img src="%s">' % escape(distribution_url(d))
-        print >>o, '<h3>%s annual residue summary</h3>' % region.capitalize()
-        print >>o, '<ul>'
-        print >>o, '<li>Min = %g<li>Max = %g' % (min(d), max(d))
-        print >>o, '<li>Zeroes: %d/%d<li>Mean = %g<li>Standard deviation = %g' % stats(d)
-        print >>o, '</ul>'
+        d = [a[1] for a in diffs]
+        print('<h3>%s annual residue distribution</h3>' % region.capitalize(), file=o)
+        print('<img src="%s">' % escape(distribution_url(d)), file=o)
+        print('<h3>%s annual residue summary</h3>' % region.capitalize(), file=o)
+        print('<ul>', file=o)
+        print('<li>Min = %g<li>Max = %g' % (min(d), max(d)), file=o)
+        print('<li>Zeroes: %d/%d<li>Mean = %g<li>Standard deviation = %g' % stats(d), file=o)
+        print('</ul>', file=o)
         top(diffs, 10, o, 'Largest %s annual residues' % region,
             lambda k, v: "%04d: %g" % (k, v))
 
         # Monthly series
-        fs = map(lambda d: open(os.path.join(d, anomaly_file % code), 'r'), dirs)
-        mons = map(asmon_values_only, fs)
+        fs = [open(os.path.join(d, anomaly_file % code), 'r') for d in dirs]
+        mons = list(map(asmon_values_only, fs))
         diffs = list(difference(mons, 0.01))
-        d = map(lambda a: a[1], diffs)
-        print >>o, '<h3>%s monthly residue distribution</h3>' % region.capitalize()
-        print >>o, '<img src="%s">' % escape(distribution_url(d))
-        print >>o, '<h3>%s monthly residue summary</h3>' % region.capitalize()
-        print >>o, '<ul>'
-        print >>o, '<li>Min = %g<li>Max = %g' % (min(d), max(d))
-        print >>o, '<li>Zeroes: %d/%d<li>Mean = %g<li>Standard deviation = %g' % stats(d)
-        print >>o, '</ul>'
+        d = [a[1] for a in diffs]
+        print('<h3>%s monthly residue distribution</h3>' % region.capitalize(), file=o)
+        print('<img src="%s">' % escape(distribution_url(d)), file=o)
+        print('<h3>%s monthly residue summary</h3>' % region.capitalize(), file=o)
+        print('<ul>', file=o)
+        print('<li>Min = %g<li>Max = %g' % (min(d), max(d)), file=o)
+        print('<li>Zeroes: %d/%d<li>Mean = %g<li>Standard deviation = %g' % stats(d), file=o)
+        print('</ul>', file=o)
         top(diffs, 10, o, 'Largest %s monthly residues' % region,
             lambda k, v: "%04d-%02d: %g" % (k[0], k[1] + 1, v))
 
     # Box series
-    fs = map(lambda d: open(os.path.join(d, box_file), 'r'), dirs)
-    boxes = map(list, map(box_series, fs))
+    fs = [open(os.path.join(d, box_file), 'r') for d in dirs]
+    boxes = list(map(list, list(map(box_series, fs))))
     diffs = list(difference(boxes))
     box_table = {}
     for d in diffs:
@@ -348,31 +348,31 @@ def compare(dirs, labels, o):
         box_table[box].append(d[1])
     box_std_devs = []
     max_std_dev = 0.0
-    for (box, box_diffs) in box_table.items():
+    for (box, box_diffs) in list(box_table.items()):
         box_table[box] = stats(box_diffs)
         std_dev = box_table[box][3]
         max_std_dev = max(max_std_dev, std_dev)
         box_std_devs.append((box, std_dev))
     
-    d = map(lambda a: a[1], diffs)
-    print >>o, '<h3>Per-box monthly residue distribution</h3>'
-    print >>o, '<img src="%s">' % escape(distribution_url(d))
-    print >>o, '<h3>Per-box monthly residue summary</h3>'
-    print >>o, '<ul>'
-    print >>o, '<li>Min = %g<li>Max = %g' % (min(d), max(d))
-    print >>o, '<li>Zeroes: %d/%d<li>Mean = %g<li>Standard deviation = %g' % stats(d)
-    print >>o, '</ul>'
+    d = [a[1] for a in diffs]
+    print('<h3>Per-box monthly residue distribution</h3>', file=o)
+    print('<img src="%s">' % escape(distribution_url(d)), file=o)
+    print('<h3>Per-box monthly residue summary</h3>', file=o)
+    print('<ul>', file=o)
+    print('<li>Min = %g<li>Max = %g' % (min(d), max(d)), file=o)
+    print('<li>Zeroes: %d/%d<li>Mean = %g<li>Standard deviation = %g' % stats(d), file=o)
+    print('</ul>', file=o)
     top(diffs, 10, o,'Largest per-box monthly residues',
         lambda k, v: "Box %02d, %04d-%02d: %g" % (k[0], k[1], k[2] + 1, v))
 
     top(box_std_devs, 10, o,'Largest per-box standard deviations',
         lambda k, v: "Box %02d: %g" % (k, v))
 
-    print >>o, '<h3>Geographic distribution of per-box monthly residue statistics</h3>'
-    print >>o, '<table border=1 style="border-collapse:collapse; border-width:1px; border-color:#cccccc; border-style:solid; font-size:small">'
+    print('<h3>Geographic distribution of per-box monthly residue statistics</h3>', file=o)
+    print('<table border=1 style="border-collapse:collapse; border-width:1px; border-color:#cccccc; border-style:solid; font-size:small">', file=o)
     box = 0
     for band in range(8):
-        print >>o, '<tr>'
+        print('<tr>', file=o)
         boxes_in_band = 18 - 2 * (abs(7 - 2*band)) # silly hack to get 4,8,12,16,16,12,8,4
         box_span = 48 / boxes_in_band
         for i in range(boxes_in_band):
@@ -382,14 +382,14 @@ def compare(dirs, labels, o):
             else:
                 gb_level = 0xff - int(0x80 * std_dev / max_std_dev)
             color = "#ff%02x%02x" % (gb_level, gb_level)
-            print >>o, '<td align="center" colspan="%d" bgcolor = "%s">' % (box_span, color)
-            print >>o, '%d%%<br/>%.2g</td>' % (100 * box_table[box][0]/box_table[box][1], box_table[box][3])
+            print('<td align="center" colspan="%d" bgcolor = "%s">' % (box_span, color), file=o)
+            print('%d%%<br/>%.2g</td>' % (100 * box_table[box][0]/box_table[box][1], box_table[box][3]), file=o)
             box += 1
-        print >>o, '</tr>'
-    print >>o, '</table>'
+        print('</tr>', file=o)
+    print('</table>', file=o)
 
-    print >>o, "</body>"
-    print >>o, "</html>"
+    print("</body>", file=o)
+    print("</html>", file=o)
     o.close()
 
 def main(argv = None):
@@ -404,7 +404,7 @@ def main(argv = None):
                                        ['help', 'output=', 'labela=', 'labelb='])
             for o, a in opts:
                 if o in ('-h', '--help'):
-                    print __doc__
+                    print(__doc__)
                     return 0
                 elif o in ('-o', '--output'):
                     output = a
@@ -417,16 +417,16 @@ def main(argv = None):
             if len(args) != 2:
                 raise Fatal("Expected two result directories, but got '%s'"
                             % ' '.join(args))
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Fatal(str(msg))
 
         # Do the comparison.
         compare(args, labels, open(output, 'w'))
         return 0
-    except Fatal, err:
+    except Fatal as err:
         sys.stderr.write(err.msg)
         sys.stderr.write('\n')
-        print __doc__
+        print(__doc__)
         return 2
 
 if __name__ == '__main__':

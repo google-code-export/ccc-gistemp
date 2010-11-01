@@ -29,12 +29,12 @@ def totext(inp, out, metaonly=False, bos='>', trimmed=None):
     """
 
     boxes = subbox.File(inp, bos=bos)
-    print >> out, repr(boxes)
+    print(repr(boxes), file=out)
     for cell in boxes:
-        print >> out, cell
+        print(cell, file=out)
         if metaonly:
             continue
-        print >> out, cell[:]
+        print(cell[:], file=out)
 
 def main(argv=None):
     import getopt

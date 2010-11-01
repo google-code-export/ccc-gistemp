@@ -151,7 +151,7 @@ class File :
     """Iterate over all records in file."""
     return self
 
-  def next(self) :
+  def __next__(self) :
     """Implements iterator protocol.  Avoid public use."""
     r = self.readline()
     if r is None :

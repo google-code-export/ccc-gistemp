@@ -11,7 +11,7 @@ Tool to collect temperature data for Candada scraped by ScraperWiki.
 """
 
 import json
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 def gather(scraper, v2out, v2inv, jsoninv, log):
     """Takes the name of a scraper hosted at ScraperWiki and gathers all
@@ -29,12 +29,12 @@ def gather(scraper, v2out, v2inv, jsoninv, log):
     rows = []
     count = 0
     while 1:
-        url = api + '?' + urllib.urlencode(dict(name=name,
+        url = api + '?' + urllib.parse.urlencode(dict(name=name,
             format='json', limit=limit, offset=offset))
         # We terminate when the JSON request returns no results, which
         # we detect using this flag.
         gotnone = True
-        result = json.load(urllib.urlopen(url))
+        result = json.load(urllib.request.urlopen(url))
         for item in result:
             gotnone = False
             count += 1

@@ -7,7 +7,7 @@
 # Nick Barnes, Ravenbrook Limited, 2010-03-08
 
 import itertools
-from giss_data import valid, invalid, MISSING
+from .giss_data import valid, invalid, MISSING
 
 """
 Shared series-processing code in the GISTEMP algorithm.
@@ -44,7 +44,7 @@ def combine(average, weight, new, new_weight,
         sum_new = 0.0    # Sum of data in new
         sum = 0.0        # Sum of data in average
         count = 0    # Number of years where both new and average are valid
-        for a,n in itertools.izip(average[first_year*12+m: last_year*12: 12],
+        for a,n in zip(average[first_year*12+m: last_year*12: 12],
                                   new[first_year*12+m: last_year*12: 12]):
             if invalid(a) or invalid(n):
                 continue
@@ -154,7 +154,7 @@ def monthly_anomalies(data, reference_period=None, base_year=-9999):
                 if valid(datum):
                     return datum - mean
                 return MISSING
-            monthly_anom.append(map(asanom, row))
+            monthly_anom.append(list(map(asanom, row)))
         else:
             monthly_anom.append([MISSING]*years)
     return monthly_mean, monthly_anom

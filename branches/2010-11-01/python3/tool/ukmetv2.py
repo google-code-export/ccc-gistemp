@@ -16,15 +16,15 @@ import re
 import sys
 # http://docs.python.org/release/2.4.4/lib/module-traceback.html
 import traceback
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 # Requires Python 2.5.
 assert sys.version_info[:2] >= (2,5)
 
 # Clear Climate Code
-import extend_path
+from . import extend_path
 from code.giss_data import MISSING
-import giss_io
+from . import giss_io
 
 PAGE = """http://www.metoffice.gov.uk/climate/uk/stationdata/"""
 
@@ -88,7 +88,7 @@ def scrapeit(prefix):
     out.inv = open(prefix + '.v2.inv', 'w')
 
     for url in geturls():
-        print "from", url
+        print("from", url)
         scrape1(url, out)
 
 def geturls():
@@ -97,7 +97,7 @@ def geturls():
     Met Office."""
 
     # http://docs.python.org/release/2.4.4/lib/module-urlparse.html
-    import urlparse
+    import urllib.parse
 
     try:
         from BeautifulSoup import BeautifulSoup
@@ -109,12 +109,12 @@ def geturls():
             yield u
         return
 
-    text = urllib.urlopen(PAGE).read()
+    text = urllib.request.urlopen(PAGE).read()
     souped = BeautifulSoup(text)
 
     for element in souped.findAll('option', value=re.compile(r'\.txt$')):
         u = element['value']
-        url = urlparse.urljoin(PAGE, u)
+        url = urllib.parse.urljoin(PAGE, u)
         yield url
 
 LARGE = 8888
@@ -131,12 +131,12 @@ def scrape1(url, out):
     """
 
     gotmeta = False
-    f = urllib.urlopen(url)
+    f = urllib.request.urlopen(url)
     name = f.readline()
     try:
         nl = name.split('/')
         if len(nl) > 1:
-            print "Split location"
+            print("Split location")
         shortname = re.sub(r'\s+', '', name)
         shortname = (shortname + '_'*6)[:7]
         assert 7 == len(shortname)
@@ -151,7 +151,7 @@ def scrape1(url, out):
             fromre = re.compile(fromre, re.IGNORECASE)
             froms = re.findall(fromre, location)
             if froms:
-                print "froms", froms
+                print("froms", froms)
 
         # Parse out the grid location (or locations, some stations have
         # moved).
@@ -179,30 +179,30 @@ def scrape1(url, out):
                 loc.rest = location[m.end():gridmatches[i+1].start()]
             locs.append(loc)
         if len(locs) != 1:
-            print len(locs), "grid locations found"
+            print(len(locs), "grid locations found")
         meta = Struct()
         old = None
         for loc in locs:
             grid = loc.grid.groups()
             easting, northing, irishgrid, height = grid
             if len(locs) > 1:
-                print ','.join([easting, northing, height]), grid[2]
+                print(','.join([easting, northing, height]), grid[2])
             # Convert to number, metres.
-            easting, northing, height = map(int, [easting, northing, height])
+            easting, northing, height = list(map(int, [easting, northing, height]))
             # Easting and Northing given are in units of 100m.  It
             # doesn't say that, but they are.  Note in particular
             # http://www.metoffice.gov.uk/climate/uk/stationdata/cambornedata.txt
             easting, northing = [100*x for x in [easting, northing]]
             if old:
-                print "Move: %.0f along; height change: %+d" % (
+                print("Move: %.0f along; height change: %+d" % (
                   math.hypot(easting-old[0], northing-old[1]),
-                  height-old[2])
+                  height-old[2]))
             old = (easting, northing, height)
             # Don't forget to use http://gridconvert.appspot.com/ to convert
             # from OSGB to GRS80. (which won't work for Irish Grid)
             irishgrid = grid[2]
             if irishgrid:
-                print "Irish Grid, can't compute lat/lon."
+                print("Irish Grid, can't compute lat/lon.")
             else:
                 lat,lon,h = osgbtolatlon(easting, northing, height)
                 meta.lat = lat
@@ -213,8 +213,8 @@ def scrape1(url, out):
         meta.height = height
         out.inv.write(metav2(meta) + '\n')
 
-    except AssertionError, err:
-        print "Skipping metadata"
+    except AssertionError as err:
+        print("Skipping metadata")
         traceback.print_exc()
 
     def year(row):
@@ -235,7 +235,7 @@ def scrape1(url, out):
         newsplit = split.get((id12, yr, 1), None)
         if newsplit:
             id12 = newsplit
-            print "Changing ID to", id12
+            print("Changing ID to", id12)
         # 12 months of temps:
         mins = [LARGE]*12
         maxs = [LARGE]*12
@@ -263,7 +263,7 @@ def osgbtolatlon(easting, northing, height):
     # See http://gridconvert.appspot.com/
     SERVICE = "http://gridconvert.appspot.com/osgb36/etrs89/"
     url = "%s%r,%r,%r" % (SERVICE, easting, northing, height)
-    result = urllib.urlopen(url).read()
+    result = urllib.request.urlopen(url).read()
     # *result* is a JSON object, but we parse it with regular
     # expressions (to avoid a json dependency).
     # RE for a JSON number.  See http://www.json.org/

@@ -16,7 +16,7 @@
 year.  See Jones and Moberg 2003 Figure 1 for an example."""
 
 import itertools
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 prefix = 'http://chart.apis.google.com/chart'
 
@@ -43,7 +43,7 @@ def popchart(inp, out):
       chxr='0,%d,%d,10|1,0,%d' % (miny,maxy,xlimit),
     )
 
-    url = prefix + '?' + '&'.join(map('='.join, d.items()))
+    url = prefix + '?' + '&'.join(map('='.join, list(d.items())))
     out.write(url+'\n')
 
 def limit(x):

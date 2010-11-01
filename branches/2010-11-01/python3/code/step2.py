@@ -26,10 +26,10 @@ import itertools
 import os.path
 
 # Clear Climate Code
-import earth
-import giss_data
-import parameters
-from giss_data import valid, invalid, MISSING
+from . import earth
+from . import giss_data
+from . import parameters
+from .giss_data import valid, invalid, MISSING
 
 log = open(os.path.join('log', 'step2.log'), 'w')
 
@@ -171,11 +171,11 @@ def annual_anomaly(record):
         # Neglect December of final year, as we do not use its season.
         if m == 11:
             month_data = month_data[:-1]
-        month_data = filter(valid, month_data)
+        month_data = list(filter(valid, month_data))
         monthly_means.append(float(sum(month_data)) / len(month_data))
     annual_anoms = []
     first = None
-    for y in range(len(series)/12):
+    for y in range(int(len(series)/12)):
         # Seasons are Dec-Feb, Mar-May, Jun-Aug, Sep-Nov.
         # (Dec from previous year).
         total = [0.0] * 4 # total monthly anomaly for each season
@@ -308,7 +308,7 @@ def cmbine(combined, weights, counts, data, weight):
     """
     sumn = ncom = 0
     avg_sum = 0.0
-    for v_avg, v_new in itertools.izip(combined, data):
+    for v_avg, v_new in zip(combined, data):
         if invalid(v_avg) or invalid(v_new):
             continue
         ncom += 1
@@ -370,7 +370,7 @@ def prepare_series(from_year, combined, urban_series, counts):
         loop, below."""
         return counts[iy] >= parameters.urban_adjustment_min_rural_stations
 
-    for iy in xrange(from_year - year_offset, len(urban_series)):
+    for iy in range(from_year - year_offset, len(urban_series)):
         if valid(combined[iy]) and valid(urban_series[iy]):
             if quorate():
                 quorate_count += 1
@@ -423,7 +423,7 @@ def rural_difference(urban, rural_stations):
 
                 log.write('%s step2-action "adjusted"\n' % urban.uid)
                 log.write("%s neighbours %r\n" %
-                  (urban.uid, map(lambda r: r.uid, neighbours)))
+                  (urban.uid, [r.uid for r in neighbours]))
                 log.write("%s adjustment %r\n" %
                   (urban.uid, dict(series=combined, year=giss_data.BASE_YEAR,
                     difference=points)))
@@ -459,7 +459,7 @@ def getfit(points):
     # Todo: incorporate trend2 into this.
     rmsmin = 1.e20
 
-    for n in xrange(parameters.urban_adjustment_min_leg,
+    for n in range(parameters.urban_adjustment_min_leg,
                     len(points) - parameters.urban_adjustment_min_leg):
         knee = points[n][0]
         sl1, sl2, rms, sl = trend2(points, knee, 2)

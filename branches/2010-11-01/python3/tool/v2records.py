@@ -43,15 +43,15 @@ def collect(v2):
         flattest[1]]))
         sys.stdout.flush()
         lines = list(lines)
-        yearmin = min(map(year, lines))
-        yearmax = max(map(year, lines))
+        yearmin = min(list(map(year, lines)))
+        yearmax = max(list(map(year, lines)))
         length = yearmax - yearmin + 1
         tmin = 9999
         tmax = -9999
         for row in lines:
             data = struct.unpack('5s'*12, row[16:-1])
-            data = map(int, data)
-            data = filter(lambda x: x != -9999, data)
+            data = list(map(int, data))
+            data = [x for x in data if x != -9999]
             tmin = min([tmin]+data)
             tmax = max([tmax]+data)
         range = tmax - tmin
@@ -74,4 +74,4 @@ def collect(v2):
 
 if __name__ == '__main__':
     from step0 import open_or_uncompress
-    print collect(open_or_uncompress('input/v2.mean'))
+    print(collect(open_or_uncompress('input/v2.mean')))
