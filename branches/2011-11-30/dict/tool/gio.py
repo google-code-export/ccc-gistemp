@@ -575,16 +575,14 @@ def GHCNV2Reader(path=None, file=None, meta=None, year_min=None):
         return l[:12]
 
     def v2_float(s):
-        """Convert a single datum from string to float; converts missing
-        values from their V2 representation, "-9999", to internal
-        representation, giss_data.MISSING; scales temperatures to
-        convert them from integer tenths to fractional degrees C.
+	"""Convert a single datum from string to float; deliberately
+	asserts that the missing value, "-9999", is not passed as
+	an argument.  Scales temperatures to convert them from
+	integer tenths to fractional degrees C.
         """
 
-        if "-9999" == s:
-            return code.giss_data.MISSING
-        else:
-            return float(s) * 0.1
+        assert "-9999" != s
+        return float(s) * 0.1
 
     # The Series.add_year protocol assumes that the years are in
     # increasing sequence.  This is so in the v2.mean file but does not
@@ -593,22 +591,33 @@ def GHCNV2Reader(path=None, file=None, meta=None, year_min=None):
     # Group the input file into blocks of lines, all of which share the
     # same 12-digit ID.
     for (id, lines) in itertools.groupby(f, id12):
-        key = dict(uid=id, first_year=year_min)
+        key = dict(uid=id)
         # 11-digit station ID.
         stid = id[:11]
         if meta and meta.get(stid):
             key['station'] = meta[stid]
         record = code.giss_data.Series(**key)
+        series = {}
         prev_line = None
         for line in lines:
             if line != prev_line:
                 year = int(line[12:16])
-                temps = [v2_float(line[a:a+5]) for a in range(16, 16+12*5, 5)]
-                record.add_year(year, temps)
+                if year < year_min:
+                    continue
+                # Extract each month as a string.
+                months = [line[a:a+5] for a in range(16, 16+12*5, 5)]
+                # Reject those months marked as missing, and form
+                # (index,temp) pairs.
+                temps = [(i,v2_float(m))
+                  for i,m in enumerate(months) if m != '-9999']
+                # Convert to ("YYYY-MM",temp) pairs.
+                pairs = (("%4d-%02d" % (year,i+1),m) for i,m in temps)
+                series.update(pairs)
                 prev_line = line
             else:
                 print ("NOTE: repeated record found: Station %s year %s;"
                        " data are identical" % (line[:12],line[12:16]))
+        record.set_series(series)
 
         if len(record) != 0:
             yield record

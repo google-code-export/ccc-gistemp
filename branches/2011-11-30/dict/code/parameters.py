@@ -15,6 +15,7 @@ order in which they are used in the algorithm.
 __docformat__ = "restructuredtext"
 
 data_sources = "ghcn ushcn hohenpeissenberg scar"
+data_sources = "ghcn"
 """Data sources that are used for the analysis (space separated string).
 'ghcn' is the Global Historical Climate Network (NOAA); 'ushcn' is
 the US Historical Climate Network (NOAA); 'hohenpeissenberg' is
