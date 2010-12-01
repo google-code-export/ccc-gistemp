@@ -201,7 +201,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             contributors = list(incircle(region_records, arc, *centre))
 
             # Combine data.
-            subbox_series = [MISSING] * max_months
+            subbox_series = {}
 
             if not contributors:
                 box_obj = giss_data.Series(series=subbox_series,
@@ -216,26 +216,23 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             total_good_months = record.good_count
             total_stations = 1
 
-            offset = record.rel_first_month - 1
-            a = record.series # just a temporary
-            subbox_series[offset:offset + len(a)] = a
+            # *subbox_series* and *weight* are each a dictionary (with the
+            # same keys).  *subbbox_series* maps from "YYYY-MM" to
+            # temperature (anomaly), *weight* maps to the weight (the
+            # sum of the station weights contributing to that month's
+            # value).
+            subbox_series.update(record.series)
             max_weight = wt
-            weight = [wt*valid(v) for v in subbox_series]
+            weight = dict((key,wt) for key in subbox_series)
 
             # For logging, keep a list of stations that contributed
             contributed = [(record.uid,wt)]
 
             # Add in the remaining stations
             for record,wt in contributors[1:]:
-                # TODO: A method to produce a padded data series
-                #       would be good here. Hence we could just do:
-                #           new = record.padded_series(max_months)
-                new = [MISSING] * max_months
-                aa, bb = record.rel_first_month, record.rel_last_month
-                new[aa - 1:bb] = record.series
                 station_months = series.combine(
-                    subbox_series, weight, new, wt,
-                    record.rel_first_year, record.rel_last_year + 1,
+                    subbox_series, weight, record.series, wt,
+                    0, 9999,
                     parameters.gridding_min_overlap)
                 total_good_months += station_months
                 if station_months == 0:
@@ -246,8 +243,8 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
                 max_weight = max(max_weight, wt)
 
-            series.anomalize(subbox_series,
-                             parameters.gridding_reference_period, first_year)
+            subbox_series = series.anomalize(subbox_series,
+                parameters.gridding_reference_period)
             box_obj = giss_data.Series(series=subbox_series, n=max_months,
                     box=list(subbox), stations=total_stations,
                     station_months=total_good_months,

@@ -643,6 +643,8 @@ class GHCNV2Writer(object):
 
     def write(self, record):
         """Write an entire record out."""
+        if len(record) == 0:
+            return
         for year in range(record.first_year, record.last_year + 1):
             if not record.has_data_for_year(year):
                 continue
@@ -1406,19 +1408,19 @@ def step3_input():
 STEP3_OUT = os.path.join('result', 'SBBX1880.Ts.GHCN.CL.PA.1200')
 
 def step3_output(data):
-    out = SubboxWriter(open(STEP3_OUT, 'wb'),
-      trimmed=False)
+    # out = SubboxWriter(open(STEP3_OUT, 'wb'),
+    #  trimmed=False)
     writer,ext = choose_writer()
     textout = writer(path=('work/step3.%s' % ext), scale=0.01)
     gotmeta = False
     for thing in data:
-        out.write(thing)
+        # out.write(thing)
         if gotmeta:
             textout.write(thing)
         gotmeta = True
         yield thing
     print "Step3: closing output file"
-    out.close()
+    # out.close()
     textout.close()
 
 def step3c_input():
