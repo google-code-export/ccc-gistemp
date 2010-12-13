@@ -20,6 +20,7 @@ __docformat__ = "restructuredtext"
 import glob
 import itertools
 import math
+import operator
 import os
 import re
 import struct
@@ -133,13 +134,20 @@ class SubboxWriter(object):
         assert self.meta.mavg == 6, "Only monthly averages supported"
 
     def _flush(self, mo1):
+        """Write the buffered record out to the file (flush it); *mo1*
+        gives the number of items (months) in the subsequent record (the
+        record that comes next, and is about to be buffered).
+        """
+
         if self.meta is None:
             # Not even a meta record written.  We could complain here,
             # but the cause is likely to be closing files early because
             # of some underlying problem.  Complaining here would mask
             # that problem.
             return
-        if not self.buf_record:
+        if None is self.buf_record:
+            # If there is no buffered record, then we must be at the
+            # beginning; write the meta data.
             m = self.meta
             rec = struct.pack(self.bos + '8i80s', mo1, m.kq, m.mavg,
                     m.monm, m.monm4, m.yrbeg, m.missing_flag,
@@ -162,13 +170,14 @@ class SubboxWriter(object):
                                   box[3],
                                   b.stations, b.station_months, b.d, 9999.0)
             else:
-                fmt = "iiiiiiif%df" % len(b)
+                fmt = "iiiiiiif%df" % len(self.buf_lin)
                 rec = struct.pack(self.bos + fmt, mo1,
                                   box[0],
                                   box[1],
                                   box[2],
                                   box[3],
-                                  b.stations, b.station_months, b.d, *b.series)
+                                  b.stations, b.station_months, b.d,
+                                  *self.buf_lin)
         self.f.writeline(rec)
 
     def write(self, record):
@@ -177,11 +186,14 @@ class SubboxWriter(object):
                     "First record must be SubboxMetaData")
             self.meta = record
         else:
+            lin = None
             if self.trimmed and record.station_months == 0:
                 self._flush(1)
             else:
-                self._flush(len(record))
+                lin = record.linear(self.meta.yrbeg)
+                self._flush(len(lin))
             self.buf_record = record
+            self.buf_lin = lin
 
     def close(self):
         self._flush(1)
@@ -330,11 +342,18 @@ class SubboxReader(object):
     def __iter__(self):
         yield self.meta
 
+        # The index of the record.  The metadata record is first, with
+        # nominal index 0.  We only use this for messages.
+        idx = 1
         for rec in self.f:
             mo1 = self.mo1
-            fmt = "iiiiiiif%df" % mo1
+            # Derive N, number of items, from the size of the record.
+            fmt = "7if" # struct.unpack format for just the header.
+            head_len = len(struct.pack(fmt, *([0]*8)))
+            N = (len(rec) - head_len) // 4
+            fmt += "%df" % N # add on the N items.
             fields = list(struct.unpack(self.bos + fmt, rec))
-            series = fields[8:]
+            linear = fields[8:]
             self.mo1 = fields[0]
             # Make an attributes dictionary.
             # The box boundaries are fields[1:5], but we need to scale
@@ -346,8 +365,16 @@ class SubboxReader(object):
               'stations', 'station_months', 'd'],
               fields[1:8]))
             attr['box'] = fields[1:5]
+            if N != mo1:
+                warnings.warn(
+                  "Record: %d Box %r, items: %d, previous mo1: %d" %
+                  (idx, attr['box'], N, mo1))
+            # Convert data from linear sequence to a dict.
+            series = (("%04d-%02d" % (i//12 + self.meta.yrbeg, i%12+1),v)
+              for i,v in enumerate(linear) if v != code.giss_data.MISSING)
             subbox = code.giss_data.Series(series=series, **attr)
             yield subbox
+            idx += 1
 
     def __getattr__(self, name):
         return getattr(self.meta, name)
@@ -584,12 +611,9 @@ def GHCNV2Reader(path=None, file=None, meta=None, year_min=None):
         assert "-9999" != s
         return float(s) * 0.1
 
-    # The Series.add_year protocol assumes that the years are in
-    # increasing sequence.  This is so in the v2.mean file but does not
-    # seem to be documented (it seems unlikely to change either).
-
-    # Group the input file into blocks of lines, all of which share the
-    # same 12-digit ID.
+    # Process each (duplicate) record one at a time,
+    # by grouping the input file into blocks of lines, all of which
+    # share the same 12-digit ID.
     for (id, lines) in itertools.groupby(f, id12):
         key = dict(uid=id)
         # 11-digit station ID.
@@ -1408,19 +1432,18 @@ def step3_input():
 STEP3_OUT = os.path.join('result', 'SBBX1880.Ts.GHCN.CL.PA.1200')
 
 def step3_output(data):
-    # out = SubboxWriter(open(STEP3_OUT, 'wb'),
-    #  trimmed=False)
+    out = SubboxWriter(open(STEP3_OUT, 'wb'), trimmed=False)
     writer,ext = choose_writer()
     textout = writer(path=('work/step3.%s' % ext), scale=0.01)
     gotmeta = False
     for thing in data:
-        # out.write(thing)
+        out.write(thing)
         if gotmeta:
             textout.write(thing)
         gotmeta = True
         yield thing
     print "Step3: closing output file"
-    # out.close()
+    out.close()
     textout.close()
 
 def step3c_input():
@@ -1613,8 +1636,7 @@ def add_blank(data, required):
     assert required in ('land', 'ocean')
 
     for this_box in data:
-        other_series = [MISSING] * len(this_box.series)
-        other_box = code.giss_data.Series(series=other_series,
+        other_box = code.giss_data.Series(series={},
             box=this_box.box,
             stations=0, station_months=0,
             d=MISSING)
@@ -1638,7 +1660,7 @@ def step5_bx_output(data):
         avgr, wtr, ngood, box = record
         n = len(avgr)
         fmt = '%s%df' % (bos, n)
-        boxf.writeline(struct.pack(fmt, *avgr) +
+        if 0: boxf.writeline(struct.pack(fmt, *avgr) +
                        struct.pack(fmt, *wtr) +
                        struct.pack('%si' % bos, ngood) +
                        struct.pack('%s4i' % bos, *box))
@@ -1735,39 +1757,42 @@ def step5_output(data):
     # Display the annual means.
     def annasstr(z):
         """Helper function that returns the annual anomaly for zone *z*
-        as a string representation of an integer (the integer is the
-        anomaly scaled by 100 to convert to centikelvin).
+        as a string.  When the anomaly is valid, the string is the
+        decimal representation of the anomaly scaled by 100 (in other
+        words, converted to centikevlin).  When the anomaly is not
+        valid, the string '*****' is returned (emulating a Fortran
+        convention used by the original GISTEMP code).
 
-        The returned value is a string that is 5 characters long.  If
-        the integer will not fit into a 5 character string, '*****' is
-        returned (this emulates the Fortran convention of formatting
-        999900 (which is the XBAD value in centikelvin) as a '*****'.
+        In all cases, the returned string is 5 characters long.
         
-        The year, *iy*, is lexically captured which is a bit horrible.
+        *year* is lexically captured which is a bit horrible.
         """
-        x = int(math.floor(100*ann[z][iy] + 0.5))
-        x = '%5d' % x
-        if len(x) > 5:
+        key = str(year)
+        if key not in ann[z]:
             return '*****'
+        x = int(math.floor(100*ann[z][str(year)] + 0.5))
+        x = '%5d' % x
+        assert len(x) == 5
         return x
 
-    iyrsp = iyrs
-    # Check (and skip) incomplete year.
-    if data[-1][-1][-1] > 8000:
-        iyrsp -= 1
+    # Compute a set of all years with valid data in any zone.
+    allyears = (set(key_year(k) for k in zd) for zd in data)
+    # Convert from sequence of sets to just a set of years.
+    allyears = reduce(operator.or_, allyears)
+
     banner = """
                            24N   24S   90S     64N   44N   24N   EQU   24S   44S   64S   90S
 Year  Glob  NHem  SHem    -90N  -24N  -24S    -90N  -64N  -44N  -24N  -EQU  -24S  -44S  -64S Year
 """.strip('\n')
-    for iy in range(iy1tab - iyrbeg, iyrsp):
-        if (iy+iyrbeg >= iy1tab+5 and ((iy+iyrbeg) % 20 == 1) or
-          iy == iy1tab - iyrbeg):
+    minyear = int(min(allyears))
+    maxyear = int(max(allyears))
+    for year in range(minyear, maxyear+1):
+        if (year >= minyear+5) and (year % 20 == 1) or (year == minyear):
             print >> out[0]
             print >> out[0], banner
-        iyr = iyrbeg+iy
         print >> out[0], ('%4d' + ' %s'*3 + '  ' + ' %s'*3 +
-                          '  ' + ' %s'*8 + '%5d') % tuple([iyr] +
-          [annasstr(iord[zone]) for zone in range(jzm)] + [iyr])
+                          '  ' + ' %s'*8 + '%5d') % tuple([year] +
+          [annasstr(iord[zone]) for zone in range(jzm)] + [year])
     # The trailing banner is just like the repeated banner, except that
     # "Year  Glob  NHem  SHem" appears on on the first line, not the
     # second line (and the same for the "Year" that appears at the end
@@ -1778,6 +1803,7 @@ Year  Glob  NHem  SHem    -90N  -24N  -24S    -90N  -64N  -44N  -24N  -EQU  -24S
     banner = '\n'.join(banner)
     print >> out[0], banner
     print >> out[0]
+    out[0].flush()
 
     tit = ['    GLOBAL','N.HEMISPH.','S.HEMISPH.']
     # Shift the remaining 3 output files so that the indexing works out.
@@ -1789,43 +1815,47 @@ Year  Glob  NHem  SHem    -90N  -24N  -24S    -90N  -64N  -44N  -24N  -EQU  -24S
     for j,outf in enumerate(out):
         print >> outf, (tit[j] + ' Temperature Anomalies' + 
           ' in .01 C     base period: 1951-1980')
-        for iy in range(iy1tab-iyrbeg, iyrs):
+        for year in range(minyear, maxyear+1):
             # Each year is formatted as a row of 18 numbers (12 months,
             # 2 different annual anomalies, and 4 seasonal).
             row = [100*XBAD]*18
-            if (iy+iyrbeg >= iy1tab+5 and ((iy+iyrbeg) % 20 == 1) or
-              iy == iy1tab - iyrbeg):
+            if (year >= minyear+5) and (year % 20 == 1) or (year == minyear):
                 print >> outf
                 print >> outf, banner
             # *data* for this zone, avoids some duplication of code.
             zdata = data[iord[j]]
             # 4 seasons.
             season = [9999]*4
-            if iy > 0:
-                season[0] = zdata[iy-1][11] + zdata[iy][0] + zdata[iy][1]
+            keys = [key(year-1, 11), key(year, 0), key(year, 1)]
+            season[0] = [zdata[k] for k in keys if k in zdata]
             for s in range(1, 4):
-                season[s] = sum(zdata[iy][s*3-1:s*3+2])
+                keys = [key(year,m) for m in range(s*3-1, s*3+2)]
+                season[s] = [zdata[k] for k in keys if k in zdata]
+            for s in range(4):
+                if len(season[s]) == 3:
+                    season[s] = sum(season[s])
+                else:
+                    season[s] = None
             # Each season slots into slots 14 to 17 of *row*.
             for s,x in enumerate(season):
-                if x < 8000:
+                if x is not None:
                     row[14+s] = int(round(100.0*x/3))
             # Meteorological Year is average of 4 seasons.
-            metann = sum(season)
-            if metann < 8000:
+            if None not in season:
+                metann = sum(season)
                 row[13] = int(round(100.0*metann/12))
-            # Calendar year as previously computed.
-            calann = ann[iord[j]][iy]
             # For final year of data, suppress annual anomaly value unless
             # December is present (assuming a full year of data?).
-            if iy == iyrs-1 and zdata[iy][-1] > 8000:
-                calann = 9999
-            if calann < 8000:
-                row[12] = int(round(100.0*ann[iord[j]][iy]))
+            if str(year) in ann[iord[j]] and (
+              year != maxyear or key(year,11) in zdata):
+                row[12] = int(round(100.0*ann[iord[j]][str(year)]))
             # Fill in the months.
             for m in range(12):
-                row[m] = int(round(100.0*zdata[iy][m]))
+                k = key(year,m)
+                if k in zdata:
+                    row[m] = int(round(100.0*zdata[k]))
             # Convert each of *row* to a string, storing the results in
-            # *sout*.
+            # *formatted_row*.
             formatted_row = [None]*len(row)
             for i,x in enumerate(row):
                 # All the elements of *row* are formatted to width 5,
@@ -1840,22 +1870,34 @@ Year  Glob  NHem  SHem    -90N  -24N  -24S    -90N  -64N  -44N  -24N  -EQU  -24S
                     if len(x) > 5:
                         x = '*****'
                 formatted_row[i] = x
-            year = iyrbeg+iy
             print >> outf, (
               '%4d ' + '%s'*12 + '  %s%s  ' + '%s'*4 + '%6d') % tuple(
               [year] + formatted_row + [year])
         print >> outf, banner
+        outf.flush()
 
-    # Save monthly means on disk.
-    zono = open('result/ZON.Ts.ho2.GHCN.CL.PA.1200', 'wb')
-    zono = fort.File(zono, bos)
-    zono.writeline(struct.pack(bos + '8i', *info) +
-                   title + titl2)
+    if 0:
+        # Save monthly means on disk.
+        zono = open('result/ZON.Ts.ho2.GHCN.CL.PA.1200', 'wb')
+        zono = fort.File(zono, bos)
+        zono.writeline(struct.pack(bos + '8i', *info) +
+                       title + titl2)
 
-    fmt_mon = bos + '%df' % monm
-    for jz in range(jzm):
-        zono.writeline(struct.pack(fmt_mon, *itertools.chain(*data[jz])) +
-                       struct.pack(fmt_mon, *itertools.chain(*wt[jz])) +
-                       zone_titles[jz])
-    zono.close()
+        fmt_mon = bos + '%df' % monm
+        for jz in range(jzm):
+            zono.writeline(struct.pack(fmt_mon, *itertools.chain(*data[jz])) +
+                           struct.pack(fmt_mon, *itertools.chain(*wt[jz])) +
+                           zone_titles[jz])
+        zono.close()
     return "Step 5 Completed"
+
+def key_year(k):
+    """Return the year part of a key used in the series dict."""
+    return k[:4]
+
+def key(y,m):
+    """Form string key from year *y* and month *m* (0 is January).  We use
+    ISO 8601 format: "YYYY-MM"."""
+
+    return "%04d-%02d" % (y,m+1)
+
