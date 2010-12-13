@@ -25,6 +25,8 @@ from giss_data import valid, invalid, MISSING
 
 # http://www.python.org/doc/2.3.5/lib/itertools-functions.html
 import itertools
+# http://docs.python.org/release/2.4.4/lib/module-operator.html
+import operator
 
 def SBBXtoBX(data):
     """Simultaneously combine the land series and the ocean series and
@@ -43,12 +45,6 @@ def SBBXtoBX(data):
     # TODO: Formalise use of only monthlies, see step 3.
     assert land_meta.mavg == 6
     combined_year_beg = min(land_meta.yrbeg, ocean_meta.yrbeg)
-    # Index into the combined array of the first year of the land data.
-    land_offset = 12*(land_meta.yrbeg-combined_year_beg)
-    # As land_offset but for ocean data.
-    ocean_offset = 12*(ocean_meta.yrbeg-combined_year_beg)
-    combined_n_months = max(land_meta.monm + land_offset,
-                            land_meta.monm + ocean_offset)
 
     info = [land_meta.mo1, land_meta.kq, land_meta.mavg, land_meta.monm,
             land_meta.monm4, combined_year_beg, land_meta.missing_flag,
@@ -66,23 +62,21 @@ def SBBXtoBX(data):
         wgtc = []
         # Eat the records from land and ocean 100 (nsubbox) at a time.
         # In other words, all 100 subboxes for the box.
-        landweight,landsub,oceansub = zip(*itertools.islice(data, nsubbox))
+        # landweight,landsub,oceansub = zip(*itertools.islice(data, nsubbox))
         # Check that we got nsubbox items.  Is this fails, truncated
         # input files is the likely culprit.
-        assert set([nsubbox]) == set(map(len, [landweight, landsub, oceansub]))
-        for t, l, o in zip(landweight, landsub, oceansub):
+        # assert set([nsubbox]) == set(map(len, [landweight, landsub, oceansub]))
+        for _,(t, l, o) in zip(range(nsubbox), data):
             # Simple version only selects either land or ocean
             assert t in (0,1)
-            a = [MISSING]*combined_n_months
             if t:
                 # use land series for this subbox
-                a[land_offset:land_offset+len(l.series)] = l.series
+                avg.append(l.series)
                 wgtc.append(l.good_count)
             else:
                 # use ocean series for this subbox
-                a[ocean_offset:ocean_offset+len(o.series)] = o.series
+                avg.append(o.series)
                 wgtc.append(o.good_count)
-            avg.append(a)
 
         # GISTEMP sort.
         # We want to end up with IORDR, the permutation array that
@@ -99,20 +93,19 @@ def SBBXtoBX(data):
         # arrays.
         nc = IORDR[0]
 
+        # Combined average temps for box record
+        avgr = dict(avg[nc])
         # Weights for the box's record.
-        wtr = [a != MISSING for a in avg[nc]]
-        # Box record
-        avgr = avg[nc][:]
+        wtr = dict((k,1) for k in avgr)
 
         # Loop over the remaining cells.
         for nc in IORDR[1:]:
             if wgtc[nc] >= parameters.subbox_min_valid:
-                series.combine(avgr, wtr, avg[nc], 1, 0,
-                           combined_n_months/12, parameters.box_min_overlap)
+                series.combine(avgr, wtr, avg[nc], 1,
+                  parameters.box_min_overlap)
 
-        series.anomalize(avgr, parameters.subbox_reference_period,
-                         combined_year_beg)
-        ngood = sum(valid(a) for a in avgr)
+        avgr = series.anomalize(avgr, parameters.subbox_reference_period)
+        ngood = len(avgr)
         yield (avgr, wtr, ngood, box)
     # We've now consumed all 8000 input boxes and yielded 80 boxes.  We
     # need to tickle the input to check that it is exhausted and to
@@ -158,6 +151,8 @@ def zonav(boxed_data):
 
     yield (info, titlei)
 
+    # *boxes_in_band* is a list that denotes how many boxes are in each
+    # band; band_in_zone then describes how to form zones from bands.
     boxes_in_band,band_in_zone = zones()
 
     bands = len(boxes_in_band)
@@ -184,16 +179,16 @@ def zonav(boxed_data):
         # total number of valid data in band's boxes
         total_length = sum(box_length)
         if total_length == 0:
-            wt[band] = [0.0]*monm
-            avg[band] = [MISSING]*monm
+            wt[band] = {}
+            avg[band] = {}
         else:
             box_length,IORD = sort_perm(box_length)
             nr = IORD[0]
             # Copy the longest box record into *wt* and *avg*.
-            # Using list both performs a copy and converts into a mutable
+            # It is critical to ensure we start with a fresh dict.
             # list.
-            wt[band] = list(box_weights[nr])
-            avg[band] = list(box_series[nr])
+            wt[band] = dict(box_weights[nr])
+            avg[band] = dict(box_series[nr])
             # And combine the remaining series.
             for n in range(1,boxes_in_band[band]):
                 nr = IORD[n]
@@ -203,10 +198,11 @@ def zonav(boxed_data):
                     # stop combining boxes.
                     break
                 series.combine(avg[band], wt[band],
-                  box_series[nr], box_weights[nr], 0, nyrsin,
+                  box_series[nr], box_weights[nr],
                   parameters.box_min_overlap)
-        series.anomalize(avg[band], parameters.box_reference_period, iyrbeg)
-        lenz[band] = sum(valid(a) for a in avg[band])
+        avg[band] = series.anomalize(avg[band],
+          parameters.box_reference_period)
+        lenz[band] = len(avg[band])
         yield (avg[band], wt[band])
 
     # We expect to have consumed all the boxes (the first 8 bands form a
@@ -233,17 +229,17 @@ def zonav(boxed_data):
             # Should be an assertion really.
             raise Error('No band in compound zone %d.' % zone)
         band = iord[j1]
-        wtg = list(wt[band])
-        avgg = list(avg[band])
+        wtg = dict(wt[band])
+        avgg = dict(avg[band])
         # Add in the remaining bands, in length order.
         for j in range(j1+1,bands):
             band = iord[j]
             if band not in band_in_zone[zone]:
                 continue
-            series.combine(avgg, wtg, avg[band], wt[band], 0,nyrsin,
+            series.combine(avgg, wtg, avg[band], wt[band],
                            parameters.box_min_overlap)
-        series.anomalize(avgg, parameters.box_reference_period, iyrbeg)
-        yield(avgg, wtg)
+        avgg = series.anomalize(avgg, parameters.box_reference_period)
+        yield avgg, wtg
 
 def sort_perm(a):
     """The array *a* is sorted into descending order.  The fresh sorted
@@ -313,7 +309,7 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
     # when we read the data, see :read:zonal below.
     data = [ None for _ in range(zones)]
     wt =   [ None for _ in range(zones)]
-    ann =  [ [MISSING]*iyrs for _ in range(zones)]
+    ann =  [ {} for _ in range(zones)]
 
     # Collect zonal means.
     for zone in range(zones):
@@ -321,21 +317,15 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
         # Regroup the *data* and *wt* series so that they come in blocks of 12.
         # Uses essentially the same trick as the `grouper()` recipe in
         # http://docs.python.org/library/itertools.html#recipes
-        data[zone] = zip(*[iter(tdata)]*12)
-        wt[zone] = zip(*[iter(twt)]*12)
+        data[zone] = tdata
+        wt[zone] = twt
 
     # Find (compute) the annual means.
     for zone in range(zones):
-        for iy in range(iyrs):
-            anniy = 0.
-            mon = 0
-            for m in range(12):
-                if data[zone][iy][m] == MISSING:
-                    continue
-                mon += 1
-                anniy += data[zone][iy][m]
-            if mon >= parameters.zone_annual_min_months:
-                ann[zone][iy] = float(anniy)/mon
+        for year,keys in itertools.groupby(data[zone], key=key_year):
+            tl = [data[zone][key] for key in keys]
+            if len(tl) >= parameters.zone_annual_min_months:
+                ann[zone][year] = sum(tl)/float(len(tl))
 
     # Alternate global mean.
     if alternate['global']:
@@ -348,26 +338,28 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
         else:
             zone = [8, 3, 4, 10]
         wtsp = [3.,2.,2.,3.]
-        for iy in range(iyrs):
-            glob = 0.
-            ann[-1][iy] = MISSING
-            for z,w in zip(zone, wtsp):
-                if ann[z][iy] == MISSING:
-                    # Note: Rather ugly use of "for...else" to emulate GOTO.
-                    break
-                glob += ann[z][iy]*w
-            else:
-                ann[-1][iy] = .1 * glob
-        for iy in range(iyrs):
-            data[-1][iy] = [MISSING]*12
+        # :todo: there are better ways to do this, by computing the set
+        # of keys that are present in all zones that are used by the
+        # global zone (instead of the current *allyears* computation).
+        # Compute a set of all years with valid data in any zone.
+        allyears = (set(key_year(k) for k in zd) for zd in data)
+        # Convert from sequence of sets to just a set of years.
+        allyears = reduce(operator.or_, allyears)
+        globann = {}
+        for year in allyears:
+            zd = [ann[z][year]*w for z,w in zip(zone, wtsp) if year in ann[z]]
+            if len(zd) == len(zone):
+                globann[year] = 0.1 * sum(zd)/float(len(zd))
+        ann[-1] = globann
+        globmonth = {}
+        for year in allyears:
             for m in range(12):
                 glob = 0.
-                for z,w in zip(zone, wtsp):
-                    if data[z][iy][m] == MISSING:
-                        break
-                    glob += data[z][iy][m]*w
-                else:
-                    data[-1][iy][m] = .1 * glob
+                k = "%s-%02d" % (year, m+1)
+                zd = [data[z][k]*w for z,w in zip(zone, wtsp) if k in data[z]]
+                if len(zd) == len(zone):
+                    globmonth[k] = 0.1 * sum(zd)/float(len(zd))
+        data[-1] = globmonth
 
     # Alternate hemispheric means.
     if alternate['hemi']:
@@ -375,21 +367,27 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
         # are numbered.  There is a useful docstring at the beginning of
         # zonav().
         for ihem in range(2):
-            for iy in range(iyrs):
-                ann[ihem+11][iy] = MISSING
-                if (ann[ihem+3][iy] != MISSING and
-                  ann[2*ihem+8][iy] != MISSING):
-                    ann[ihem+11][iy] = (0.4*ann[ihem+3][iy] +
-                                        0.6*ann[2*ihem+8][iy])
-            for iy in range(iyrs):
-                data[ihem+11][iy] = [MISSING]*12
-                for m in range(12):
-                    if (data[ihem+3][iy][m] != MISSING and
-                      data[2*ihem+8][iy][m] != MISSING):
-                        data[ihem+11][iy][m] = (
-                          0.4*data[ihem+3][iy][m] +
-                          0.6*data[2*ihem+8][iy][m])
+            # Each hemisphere is formed from 2 zones; the indexes of
+            # which are z1 and z2.
+            z1 = ihem+3
+            z2 = 2*ihem+8
+            # The hemisphere in question is *hemzon*.
+            hemzon = ihem+11
+            ann[hemzon] = {}
+            common_years = set(ann[z1]) & set(ann[z2])
+            for year in common_years:
+                ann[hemzon][year] = (0.4*ann[z1][year] +
+                                     0.6*ann[z2][year])
+            data[hemzon] = {}
+            common_months = set(data[z1]) & set(data[z2])
+            for m in common_months:
+                data[hemzon][m] = (0.4*data[z1][m] +
+                                   0.6*data[z2][m])
     return (info, data, wt, ann, parameters.zone_annual_min_months, title)
+
+def key_year(k):
+    """Return the year part of a key used in the series dict."""
+    return k[:4]
 
 
 def ensure_weight(data):

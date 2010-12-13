@@ -14,8 +14,7 @@ Shared series-processing code in the GISTEMP algorithm.
 """
 
 
-def combine(average, weight, new, new_weight,
-            first_year, last_year, min_overlap):
+def combine(average, weight, new, new_weight, min_overlap):
     """Run the GISTEMP combining algorithm.  This combines the data
     in the *new* dict into the *average* dict.  *new* has associated
     weights in the *new_weight* dict, *average* has weights in the
@@ -25,13 +24,11 @@ def combine(average, weight, new, new_weight,
     keys to temperature values.  Similarly for *new*.  The weight dicts,
     *weight* and *new_weight* store weights in a similar fashion.
 
-    Only data for years in *range(first_year, last_year)* are
-    considered and combined.
-
     *new_weight* can be either a constant or an dict of weights for
      each datum in *new*.
 
-    The number of month records combined is returned.
+    The number of month records combined is returned.  The *average* and
+    *weight* dicts are mutated.
 
     Each month of the year is considered separately.  For the set of
     times where both *average* and *new* have data the mean difference

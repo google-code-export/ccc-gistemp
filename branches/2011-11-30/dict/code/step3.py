@@ -232,7 +232,6 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             for record,wt in contributors[1:]:
                 station_months = series.combine(
                     subbox_series, weight, record.series, wt,
-                    0, 9999,
                     parameters.gridding_min_overlap)
                 total_good_months += station_months
                 if station_months == 0:
