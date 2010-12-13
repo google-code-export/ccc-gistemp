@@ -40,7 +40,7 @@ def combine(average, weight, new, new_weight, min_overlap):
     """
 
     assert 0 < min_overlap
-    new_weight = ensure_container(weight, new_weight)
+    new_weight = ensure_container(new, new_weight)
 
     months_combined = 0
     # Set of months (keys) in *average* (the reference series).
@@ -49,8 +49,9 @@ def combine(average, weight, new, new_weight, min_overlap):
     # februarys, and so on.
     for m,keys in itertools.groupby(sorted(new, key=key_month),
       key=key_month):
-        kl = list(keys)
-        common = set(kl) & set(average)
+        # Convert *keys* to list, because we need to use it twice.
+        keys = list(keys)
+        common = set(keys) & ref_keys
         if len(common) < min_overlap:
             continue
         # Differences for the common overlap.
