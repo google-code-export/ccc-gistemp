@@ -98,7 +98,6 @@ def clear_cache(func):
 
     """
     def f(self, *args, **kwargs):
-        self._good_count = None
         return func(self, *args, **kwargs)
 
     return f
@@ -223,7 +222,6 @@ class Series(object):
     """
     def __init__(self, **k):
         self._series = []
-        self._good_count = None
         self.ann_anoms = []
         series = None
         assert 'first_year' not in k
@@ -340,6 +338,23 @@ class Series(object):
     def station_uid(self):
         """The unique ID of the corresponding station."""
         return self.uid[:11]
+
+    def linear(self, begin):
+        """Return the series as a linear sequence (list).  *begin*
+        specifies the first year of the result sequence; the first entry
+        of the result is for January.
+        """
+
+        if not self._series:
+            return []
+        year_max = int(max(self._series)[:4])
+        assert "%04d" % begin < min(self._series)
+        result = []
+        for y in range(begin, year_max+1):
+            for i in range(12):
+                key = "%04d-%02d" % (y, i+1)
+                result.append(self._series.get(key, MISSING))
+        return result
 
     # Mutators below here
 
