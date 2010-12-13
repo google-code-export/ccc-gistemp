@@ -12,7 +12,7 @@ import extend_path
 import gio
 
 def convert(inp, out):
-    """Convert a file inp from subbox to V2 mean format."""
+    """Convert a file *inp* from subbox to V2 mean format."""
 
     # Clear Climate Code
     from code import eqarea
