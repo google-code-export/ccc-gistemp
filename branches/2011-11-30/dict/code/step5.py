@@ -320,7 +320,7 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
 
     # Find (compute) the annual means.
     for zone in range(zones):
-        for year,keys in itertools.groupby(data[zone], key=key_year):
+        for year,keys in itertools.groupby(sorted(data[zone]), key=key_year):
             tl = [data[zone][key] for key in keys]
             if len(tl) >= parameters.zone_annual_min_months:
                 ann[zone][year] = sum(tl)/float(len(tl))
