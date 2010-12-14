@@ -32,6 +32,7 @@ import extend_path
 import fort
 import code.giss_data
 from code import parameters
+from code import series
 
 
 #: Integer code used to indicate missing data.
@@ -1737,13 +1738,10 @@ def step5_output(data):
     iyrbeg = info[5]
     jzm = len(ann)
     iyrs = len(ann[0])
-    monm = iyrs * 12
     
     out = ['ZonAnn', 'GLB', 'NH', 'SH']
     out = [open('result/'+bit+'.Ts.ho2.GHCN.CL.PA.txt', 'w')
             for bit in out]
-
-    bos = '>'
 
     # Create and write out the header record of the output files.
     print >> out[0], ' Annual Temperature Anomalies (.01 C) - ' + title[28:80]
@@ -1876,20 +1874,42 @@ Year  Glob  NHem  SHem    -90N  -24N  -24S    -90N  -64N  -44N  -24N  -EQU  -24S
         print >> outf, banner
         outf.flush()
 
-    if 0:
-        # Save monthly means on disk.
-        zono = open('result/ZON.Ts.ho2.GHCN.CL.PA.1200', 'wb')
-        zono = fort.File(zono, bos)
-        zono.writeline(struct.pack(bos + '8i', *info) +
-                       title + titl2)
-
-        fmt_mon = bos + '%df' % monm
-        for jz in range(jzm):
-            zono.writeline(struct.pack(fmt_mon, *itertools.chain(*data[jz])) +
-                           struct.pack(fmt_mon, *itertools.chain(*wt[jz])) +
-                           zone_titles[jz])
-        zono.close()
+    # Save monthly means on disk.
+    write_zones(data, wt, info, title+titl2, zone_titles)
     return "Step 5 Completed"
+
+def write_zones(data, weight, info, title, zone_title):
+    """Write the monthly data, in the *data* and *weight* dicts, to a
+    binary ZON file.  *title* is the file title (written into the first
+    record); *zone_title* gives the title for each of the zones (written
+    into each subsequent record).  *info* is the info 8-tuple.
+    """
+
+    bos = '>'
+
+    zono = open('result/ZON.Ts.ho2.GHCN.CL.PA.1200', 'wb')
+    zono = fort.File(zono, bos)
+    zono.writeline(struct.pack(bos + '8i', *info) + title)
+
+    # Each zonal series will be made into a linear sequence, starting at
+    # the earliest year (for all zones) and ending in the latest year
+    # (for all zones).
+    mindate = min(min(d) for d in data)
+    maxdate = max(max(d) for d in data)
+    minyear = int(key_year(mindate))
+    maxyear = int(key_year(maxdate))
+    limit = maxyear+1
+    # Number of months in each list.
+    n = 12 * (limit - minyear)
+
+    fmt = bos + '%df' % n
+    for t,w,zt in zip(data, weight, zone_title):
+        tlist = series.aslist(t, minyear, limit)
+        wlist = series.aslist(w, minyear, limit)
+        zono.writeline(struct.pack(fmt, *tlist) +
+                       struct.pack(fmt, *wlist) +
+                       zt)
+    zono.close()
 
 def key_year(k):
     """Return the year part of a key used in the series dict."""
