@@ -1728,13 +1728,11 @@ def step5_zone_titles():
 def step5_output(data):
     """Generate final Step 5 output files."""
 
+    # :todo: monmin not used.
     (info, data, wt, ann, monmin, title) = data
     XBAD = 9999
     iy1tab = 1880
 
-    zone_titles = step5_zone_titles()
-
-    titl2 = ' zones:  90->64.2->44.4->23.6->0->-23.6->-44.4->-64.2->-90                      '
     iyrbeg = info[5]
     jzm = len(ann)
     iyrs = len(ann[0])
@@ -1875,17 +1873,18 @@ Year  Glob  NHem  SHem    -90N  -24N  -24S    -90N  -64N  -44N  -24N  -EQU  -24S
         outf.flush()
 
     # Save monthly means on disk.
-    write_zones(data, wt, info, title+titl2, zone_titles)
+    titl2 = ' zones:  90->64.2->44.4->23.6->0->-23.6->-44.4->-64.2->-90                      '
+    write_zones(data, wt, info, title+titl2)
     return "Step 5 Completed"
 
-def write_zones(data, weight, info, title, zone_title):
+def write_zones(data, weight, info, title):
     """Write the monthly data, in the *data* and *weight* dicts, to a
     binary ZON file.  *title* is the file title (written into the first
-    record); *zone_title* gives the title for each of the zones (written
-    into each subsequent record).  *info* is the info 8-tuple.
+    record). *info* is the info 8-tuple.
     """
 
     bos = '>'
+    zone_title = step5_zone_titles()
 
     zono = open('result/ZON.Ts.ho2.GHCN.CL.PA.1200', 'wb')
     zono = fort.File(zono, bos)
