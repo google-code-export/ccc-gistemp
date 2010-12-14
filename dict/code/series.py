@@ -227,3 +227,16 @@ def monthly_annual(data):
                                       min = 3))
     return (annual_mean, annual_anom)
 
+
+def aslist(series, base, limit):
+    """Convert the dict *series* into a list (using giss_data.MISSING
+    for the missing values).  The list starts in the year *base* and
+    goes up to, but not including, *limit*.
+    """
+
+    result = []
+    for y in range(base, limit):
+        for i in range(12):
+            key = "%04d-%02d" % (y, i+1)
+            result.append(series.get(key, MISSING))
+    return result

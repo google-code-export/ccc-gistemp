@@ -349,12 +349,7 @@ class Series(object):
             return []
         year_max = int(max(self._series)[:4])
         assert "%04d" % begin < min(self._series)
-        result = []
-        for y in range(begin, year_max+1):
-            for i in range(12):
-                key = "%04d-%02d" % (y, i+1)
-                result.append(self._series.get(key, MISSING))
-        return result
+        return series.aslist(self._series, begin, year_max+1)
 
     # Mutators below here
 
