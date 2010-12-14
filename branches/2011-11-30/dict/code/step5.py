@@ -303,10 +303,11 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
     iyrs = monm // 12
     iyrend = iyrs + iyrbeg
 
-    # Allocate the 2- and 3- dimensional arrays.
-    # The *data* and *wt* arrays are properly 3 dimensional
-    # ([zone][year][month]), but the inner frames are only allocated
-    # when we read the data, see :read:zonal below.
+    # Allocate arrays.
+    # The *data* array has one series for each of the (14) zones.  The
+    # *wt* array gives the weights for the corresponding series (the
+    # series and its weights are each a dict).
+    # *ann* is an array of the annual series for each zone.
     data = [ None for _ in range(zones)]
     wt =   [ None for _ in range(zones)]
     ann =  [ {} for _ in range(zones)]
@@ -314,9 +315,6 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
     # Collect zonal means.
     for zone in range(zones):
         (tdata, twt) = zoned_averages.next()
-        # Regroup the *data* and *wt* series so that they come in blocks of 12.
-        # Uses essentially the same trick as the `grouper()` recipe in
-        # http://docs.python.org/library/itertools.html#recipes
         data[zone] = tdata
         wt[zone] = twt
 
@@ -349,7 +347,7 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
         for year in allyears:
             zd = [ann[z][year]*w for z,w in zip(zone, wtsp) if year in ann[z]]
             if len(zd) == len(zone):
-                globann[year] = 0.1 * sum(zd)/float(len(zd))
+                globann[year] = 0.1 * sum(zd)
         ann[-1] = globann
         globmonth = {}
         for year in allyears:
@@ -358,7 +356,7 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
                 k = "%s-%02d" % (year, m+1)
                 zd = [data[z][k]*w for z,w in zip(zone, wtsp) if k in data[z]]
                 if len(zd) == len(zone):
-                    globmonth[k] = 0.1 * sum(zd)/float(len(zd))
+                    globmonth[k] = 0.1 * sum(zd)
         data[-1] = globmonth
 
     # Alternate hemispheric means.
