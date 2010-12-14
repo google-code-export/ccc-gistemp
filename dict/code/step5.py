@@ -335,6 +335,8 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
             zone = [8, 9, 9, 10]
         else:
             zone = [8, 3, 4, 10]
+        # :area:10: Note that these weights are 10 times the zone's area.
+        # Which requires a corresponding scale by 0.1 below.
         wtsp = [3.,2.,2.,3.]
         # :todo: there are better ways to do this, by computing the set
         # of keys that are present in all zones that are used by the
@@ -347,6 +349,7 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
         for year in allyears:
             zd = [ann[z][year]*w for z,w in zip(zone, wtsp) if year in ann[z]]
             if len(zd) == len(zone):
+                # Rescale, see :area:10:
                 globann[year] = 0.1 * sum(zd)
         ann[-1] = globann
         globmonth = {}
@@ -356,6 +359,7 @@ def annzon(zoned_averages, alternate={'global':2, 'hemi':True}):
                 k = "%s-%02d" % (year, m+1)
                 zd = [data[z][k]*w for z,w in zip(zone, wtsp) if k in data[z]]
                 if len(zd) == len(zone):
+                    # Rescale, see :area:10:
                     globmonth[k] = 0.1 * sum(zd)
         data[-1] = globmonth
 
