@@ -345,6 +345,8 @@ class Series(object):
         of the result is for January.
         """
 
+        import series
+
         if not self._series:
             return []
         year_max = int(max(self._series)[:4])
