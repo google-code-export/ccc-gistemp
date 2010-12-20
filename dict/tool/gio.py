@@ -1656,13 +1656,18 @@ def step5_bx_output(data):
     info, title = data.next()
     boxf.writeline(struct.pack('%s8i' % bos, *info) + title)
     yield (info, title)
+    first_year = info[5]
+    nmonths = info[3]
+    limit_year = first_year + nmonths//12
+    n = 12 * (limit_year - first_year)
 
     for record in data:
         avgr, wtr, ngood, box = record
-        n = len(avgr)
         fmt = '%s%df' % (bos, n)
-        if 0: boxf.writeline(struct.pack(fmt, *avgr) +
-                       struct.pack(fmt, *wtr) +
+        tlist = series.aslist(avgr, first_year, limit_year)
+        wlist = series.aslist(wtr, first_year, limit_year)
+        boxf.writeline(struct.pack(fmt, *tlist) +
+                       struct.pack(fmt, *wlist) +
                        struct.pack('%si' % bos, ngood) +
                        struct.pack('%s4i' % bos, *box))
         yield record
@@ -1893,8 +1898,8 @@ def write_zones(data, weight, info, title):
     # Each zonal series will be made into a linear sequence, starting at
     # the earliest year (for all zones) and ending in the latest year
     # (for all zones).
-    mindate = min(min(d) for d in data)
-    maxdate = max(max(d) for d in data)
+    mindate = min(min(d) for d in data if d)
+    maxdate = max(max(d) for d in data if d)
     minyear = int(key_year(mindate))
     maxyear = int(key_year(maxdate))
     limit = maxyear+1

@@ -97,8 +97,6 @@ def do_combine(stream, log, select_func, combine_func):
             ann_mean, ann_anoms = series.monthly_annual(record.series)
             record.set_ann_anoms(ann_anoms)
             record.ann_mean = ann_mean
-        begin, end = records_begin_end(records)
-        years = end - begin + 1
         # reduce the collection of records (by combining) until there
         # are none (or one) left.
         while records:
@@ -108,27 +106,26 @@ def do_combine(stream, log, select_func, combine_func):
                 break
             record = select_func(records)
             records.remove(record)
-            sums, wgts = fresh_arrays(record, years)
+            sums, wgts = fresh_series(record)
             log.write("\t%s %s %s -- %s\n" % (record.uid,
-                record.first_valid_year(), record.last_valid_year(),
+                record.first_year, record.last_year,
                 record.source))
-            combine_func(sums, wgts, begin, records, log, record.uid)
+            combine_func(sums, wgts, records, log, record.uid)
             final_data = average(sums, wgts)
-            record.set_series(begin * 12 + 1, final_data)
+            record.set_series(final_data)
             yield record
 
-def combine(sums, wgts, begin, records, log, new_id_):
+def combine(sums, wgts, records, log, new_id_):
     while records:
         record, diff, overlap = get_longest_overlap(average(sums, wgts),
-                                                    begin, records)
+                                                    records)
         if overlap < parameters.station_combine_min_overlap:
             log.write("\tno other records okay\n")
             return
         records.remove(record)
         offset_and_add(sums, wgts, diff, record)
         log.write("\t %s %d %d %f\n" % (record.uid,
-            record.first_valid_year(),
-            record.last_valid_year(), diff))
+            record.first_year, record.last_year, diff))
 
 def get_best(records):
     """Given a set of records, return the "best" one.
@@ -154,7 +151,7 @@ def get_best(records):
         return best_rec
     return longest_rec
 
-def pieces_combine(sums, wgts, begin, records, log, new_id):
+def pieces_combine(sums, wgts, records, log, new_id):
     """The combine_func (passed to do_combine()) for comb_pieces().
 
     Combines remaining records that have insufficient overlap.
@@ -162,10 +159,9 @@ def pieces_combine(sums, wgts, begin, records, log, new_id):
 
     while records:
         record, diff_, overlap_ = get_longest_overlap(average(sums, wgts),
-                                                      begin, records)
+                                                      records)
         log.write("\t %s %d %d\n" % (record.uid,
-           record.first_valid_year(),
-           record.last_valid_year()))
+           record.first_year, record.last_year))
 
         is_okay = find_quintuples(sums, wgts, record, new_id, log)
 
@@ -197,23 +193,23 @@ def get_longest(records):
     return max(t.values(), key=length)
 
 def find_quintuples(sums, wgts, record, new_id, log):
-    """The *sums* and *wgts* arrays are assumed to begin in the same
-    year as *record*.  Returns a boolean."""
+    """*sums* and *wgts* are each a dict.  As is *record*.
+    Returns a boolean."""
 
     # An identifier common to all the log output.
     logid = "%s %s" % (new_id, record.uid)
 
-    rec_begin = record.first_valid_year()
-    rec_end = record.last_valid_year()
+    # Get the first and last valid years.
+    rec_begin = record.first_year
+    rec_end = record.last_year
 
-    actual_begin, actual_end = get_actual_endpoints(wgts, record.first_year)
+    actual_begin, actual_end = get_actual_endpoints(wgts)
 
     max_begin = max(actual_begin, rec_begin)
     min_end = min(actual_end, rec_end)
     # Since max_begin and min_end are integers, this rounds fractional
     # middle years up.
     middle_year = int(.5 * (max_begin + min_end) + 0.5)
-    offset = (middle_year - record.first_year)
     log.write("max begin: %s\tmin end: %s\n" % (max_begin, min_end))
 
     new_data = average(sums, wgts)
@@ -234,11 +230,12 @@ def find_quintuples(sums, wgts, record, new_id, log):
     for rad in range(1, parameters.station_combine_bucket_radius + 1):
         # For the two series, get data from from -rad to rad (inclusive)
         # around the middle year.
-        base = offset-rad
-        base = max(0, base)
-        limit = offset+rad+1
-        new_middle = [x for x in new_ann_anoms[base:limit] if valid(x)]
-        rec_middle = [x for x in rec_ann_anoms[base:limit] if valid(x)]
+        base = middle_year - rad
+        limit = middle_year + rad+1
+        new_middle = [new_ann_anoms[x]
+          for x in xrange(base, limit) if x in new_ann_anoms]
+        rec_middle = [rec_ann_anoms[x]
+          for x in xrange(base, limit) if x in rec_ann_anoms]
         if (len(new_middle) >= parameters.station_combine_min_mid_years
             and len(rec_middle) >= parameters.station_combine_min_mid_years):
             log.write("overlap success: %s\n" % logid)
@@ -273,15 +270,13 @@ def adjust_helena(stream):
             series = record.series
             this_year, month, summand = helena_ds[id]
             begin = record.first_year
-            # Index of month specified by helena_ds
-            M = (this_year - begin)*12 + month
+            # Dict key for the month specified in the config file.
+            M = "%04d-%02d" % (this_year, month)
             # All valid data up to and including M get adjusted
-            for i in range(M+1):
-                datum = series[i]
-                if invalid(datum):
-                    continue
-                series[i] += summand
-            record.set_series(record.first_month, series)
+            for k in series:
+                if k <= M:
+                    series[k] += summand
+            record.set_series( series)
             del helena_ds[id]
         yield record
 
@@ -295,8 +290,7 @@ def drop_strange(data):
         changes = changes_dict.get(record.uid, [])
         series = record.series
         begin = record.first_year
-        # :todo: Use record.last_year
-        end = begin + (len(series)//12) - 1
+        end = record.last_year
         for (kind, year, x) in changes:
             if kind == 'years':
                 # omit all the data from year1 to year2, inclusive
@@ -306,25 +300,23 @@ def drop_strange(data):
                     # Drop this whole record.  Note: avoids "else:"
                     # clause at end of "for" loop.
                     break
-
-                # Clamp range of deleted years to the range of the
-                # series.
-                year1 = max(year1, begin)
-                year2 = min(year2, end)
-                if year2 < year1:
-                    # Happens when deleted range is entirely outside the
-                    # range of the series.  In which case, pass record
-                    # unchanged.
-                    continue
-                # Invalidate the data.
-                nmonths = (year2 + 1 - year1) * 12
-                series[(year1-begin)*12:(year2+1-begin)*12] = [
-                        MISSING] * nmonths
+                base = str(year1)
+                limit = str(year2+1)
+                # Because we are going to delete items in the *series*
+                # dict, we must take a copy of keys when iterating.
+                for k in series.keys():
+                    if base <= k < limit:
+                        del series[k]
 
             else: # remove a single month
-                series[(year-begin)*12 + x-1] = MISSING
+                k = "%04d-%02d" % (year, x)
+                if k in series:
+                    del series[k]
+                else:
+                    print "drop strange: %s %s is missing anyway" % (
+                      record.uid, k)
         else:
-            record.set_series(begin * 12 + 1, series)
+            record.set_series(series)
             yield record
 
 
@@ -339,34 +331,29 @@ def alter_discont(data):
         if alter_dict.has_key(record.uid):
             series = record.series
             (a_month, a_year, a_num) = alter_dict[record.uid]
-            begin = record.first_year
-            # Month index of the month in the config file.
-            M = (a_year - begin)*12 + a_month - 1
+            # Dict key for the month specified in the config file.
+            M = "%04d-%02d" % (a_year, a_month)
             # Every (valid) month up to and not including the month in
             # question is adjusted.
-            for i in range(M):
-                if valid(series[i]):
-                    series[i] += a_num
-            record.set_series(record.first_month, series)
+            for k in series:
+                if k < M:
+                    series[k] += a_num
+            record.set_series(series)
 
         yield record
 
 
 def average(sums, counts):
     """Divide *sums* by *counts* to make a series of averages.
-    Return an array with sums[i]/counts[i], and MISSING where
-    counts[i] is zero.
+    Return an dict with values sums[k]/counts[k] (for every k in
+    *sums*).
     """
 
+    # We assume something stronger than our assert: that the set
+    # of keys in *sums* is the same as the set of keys in *counts*.
     assert len(sums) == len(counts)
 
-    data = [MISSING] * (len(sums))
-
-    for i,(sum,count) in enumerate(zip(sums, counts)):
-        if count:
-            data[i] = float(sum) / count
-
-    return data
+    return dict((k,float(v)/counts[k]) for k,v in sums.iteritems())
 
 def offset_and_add(sums, wgts, diff, record):
     """Add the data from *record* to the *sums* and *wgts* arrays, first
@@ -374,25 +361,20 @@ def offset_and_add(sums, wgts, diff, record):
     assumd to start with the same year.
     """
 
-    for i,datum in enumerate(record.series):
-        if invalid(datum):
-            continue
-        sums[i] += datum - diff
-        wgts[i] += 1
+    for k,datum in record.series.iteritems():
+        sums[k] = sums.get(k, 0.0) + datum - diff
+        wgts[k] = wgts.get(k, 0) + 1
 
-def get_longest_overlap(target, begin, records):
+def get_longest_overlap(target, records):
     """Find the record in the *records* set that has the longest
     overlap with the *target* by considering annual anomalies.  *target*
-    is a sequence of monthly values starting in the year *begin*.
+    is a dict of monthly values.
 
     A triple (record, diff, overlap) is returned; *diff* is the average
     difference in annual anomalies between *record* and *target*
     (positive when *record* is higher); *overlap* is the number of years
     in the overlap.  Even when there is no overlap _some_ record is
     returned and in that case *diff* is None and *overlap* is 0.
-    
-    Like other functions, assumes (and asserts) that *begin* is
-    the first year for all the records.
     """
 
     # Annual mean, and annual anomaly sequence.
@@ -406,9 +388,8 @@ def get_longest_overlap(target, begin, records):
     # temporary dict.
     t = dict((record.uid, record) for record in records)
     for record in t.values():
-        common = [(rec_anom,anom)
-          for rec_anom, anom in zip(record.ann_anoms, anoms)
-          if valid(rec_anom) and valid(anom)]
+        common_years = set(record.ann_anoms) & set(anoms)
+        common = [(record.ann_anoms[k],anoms[k]) for k in common_years]
         if len(common) < overlap:
             continue
         overlap = len(common)
@@ -419,73 +400,38 @@ def get_longest_overlap(target, begin, records):
             diff = S / len(common)
     return best_record, diff, overlap
 
-def records_begin_end(records):
-    """*records* is a set of records.
-
-    (*year_min*, *year_max*) is returned, where *year_min* and
-    *year_max* are the minimum and maximum years with data, across
-    all the records consulted.
-
-    This function asserts that all the records have the same first year
-    (which will be *year_min*)
+def fresh_series(record):
+    """Make and return a fresh copy of the series.  A pair of
+    (*series*,*weight*) is returned; each is a dict.
     """
 
-    first_years = set(record.first_year for record in records)
-    assert 1 == len(first_years)
-    y_min = list(first_years)[0]
-    y_max = max(record.last_year for record in records)
-    return y_min, y_max
+    series = dict(record.series)
+    weight = dict((k,1) for k in series)
 
-def fresh_arrays(record, years):
-    """Make and return a fresh pair of arrays: (*sums*, *wgts*).
-    Each array is list (of length 12 * years; the input record should
-    not be longer).
+    return series,weight
 
-    The start of the result arrays will be the same as the start of the
-    input *record*, which should generally be the same for all inputs.
+def sigma(d):
+    """Compute and return the standard deviation, sigma, for the values
+    in the dict *d*.
     """
 
-    nmonths = years * 12
-
-    # Number of months in record.
-    rec_months = len(record)
-    assert rec_months <= nmonths
-
-    sums = [0.0] * nmonths
-    # Copy valid data rec_data into sums, assigning 0 for invalid data.
-    sums[:rec_months] = (valid(x)*x for x in record.series)
-    # Let wgts[i] be 1 where sums[i] is valid.
-    wgts = [0] * nmonths
-    wgts[:rec_months] = (int(valid(x)) for x in record.series)
-
-    return sums, wgts
-
-
-def sigma(list):
-    # Remove invalid (missing) data.
-    list = filter(valid, list)
-    if len(list) == 0:
+    l = d.values()
+    if not l:
         return MISSING
     # Two pass method ensures argument to sqrt is always positive.
-    mean = sum(list) / len(list)
-    sigma_squared = sum((x-mean)**2 for x in list)
-    return math.sqrt(sigma_squared/len(list))
+    mean = sum(l) / len(l)
+    sigma_squared = sum((x-mean)**2 for x in l)
+    return math.sqrt(sigma_squared/len(l))
 
-def get_actual_endpoints(wgts, begin):
-    """For the array of weights in *wgts* return the first and last
-    calendar years that have some weight (contain a month with non-zero
-    weight); assuming the array starts in year *begin*."""
+def get_actual_endpoints(wgts):
+    """For the dict of weights in *wgts* return the first and last
+    calendar years that have some weight.  Assumes that any present key
+    in the dict is associated with non-zero weight.
+    """
 
-    # Exact number of years.
-    assert len(wgts) % 12 == 0
-    y_min = 9999
-    y_max = 0
-    for i in range(0, len(wgts), 12):
-        if sum(wgts[i:i+12]) > 0:
-            y = i//12
-            y_min = min(y_min, y)
-            y_max = max(y_max, y)
-    return begin+y_min, begin+y_max
+    minyear = int(min(wgts)[:4])
+    maxyear = int(max(wgts)[:4])
+    return minyear, maxyear
 
 def step1(record_source):
     """An iterator for step 1.  Produces a stream of
@@ -501,5 +447,4 @@ def step1(record_source):
     combined_pieces = comb_pieces(helena_adjusted)
     without_strange = drop_strange(combined_pieces)
     for record in alter_discont(without_strange):
-        assert record.first_year == BASE_YEAR
         yield record
