@@ -169,25 +169,60 @@ def key_month(s):
     """Return the month part of a key used in a series dict."""
     return s[5:7]
 
+def key_metyear(s):
+    """Return the meteorological year (as an integer) for a key used in
+    a series dict.  The key is of the form "YYYY-MM" and the result will
+    be YYYY except for december (MM == "12") when the result will be
+    YYYY+1.
+    """
+  
+    y = int(s[:4])
+    y += s.endswith("12")
+    return y
+
+
 # Originally from step1.py
 def monthly_annual(data):
-    """From a sequence of monthly data, compute an annual mean and
-    sequence of annual anomalies.  This has a particular algorithm
+    """From a dict of monthly data, compute an annual mean and
+    dict of annual anomalies.  This has a particular algorithm
     (via monthly and then seasonal means and anomalies), which must
     be maintained for bit-for-bit compatibility with GISTEMP; maybe
     we can drop it later.  A pair (annual_mean, annual_anomalies) is
-    returned.
+    returned.  *annual_anomalies* is a dict that maps from (integer)
+    year to anomaly for that year.
     """
     
     years = len(data) // 12
     monthly_mean, monthly_anom = monthly_anomalies(data)
 
-    # :todo:
-    # The seasonal calculation shoud be abstracted into a function.
-    # inputs: years, monthly_anom, monthly_mean
-    # outputs: seasonal_anom, seasonal_mean
-    # Average monthly means to make seasonal means,
-    # and monthly anomalies to make seasonal anomalies.
+    seasonal_mean, seasonal_anom = seasonal_anomalies(monthly_mean,
+      monthly_anom)
+
+    # Average seasonal means to make annual mean,
+    # and average seasonal anomalies to make annual anomalies
+    # (note: annual anomalies are December-to-November).
+    annual_mean = valid_mean(seasonal_mean, min = 3)
+    annual_anom = {}
+    allyears = set()
+    for d in seasonal_anom:
+        allyears.update(d)
+    for year in allyears:
+        s = [d[year] for d in seasonal_anom if year in d]
+        if len(s) >= 3:
+            v = sum(s)/float(len(s))
+            annual_anom[year] = v
+    return (annual_mean, annual_anom)
+
+def seasonal_anomalies(monthly_mean, monthly_anom):
+    """Compute seasonal means and anomalies.  A pair (seasonal_mean,
+    seasonal_anom) is returned.  *seasonal_anom* is a length 4 list with
+    each element being a dict (one for each season).  A season's dict is
+    indexed by the year as an integer key.
+
+    Monthly means are averaged to make seasonal means, and monthly
+    anomalies are averaged to make seasonal anomalies.
+    """
+
     seasonal_mean = []
     seasonal_anom = []
     # Compute seasonal anomalies; each season consists of 3 months.
@@ -198,35 +233,22 @@ def monthly_annual(data):
         # Need at least two valid months for a valid season.
         seasonal_mean.append(valid_mean((monthly_mean[m] for m in months),
                                         min = 2))
-        # A list of 3 data series, each being an extract for a
-        # particular month.
-        month_in_season = []
+        # List of months in this season, in the form ["12", "01", "02"]
+        # (for boreal winter season, for example)
+        l = ["%02d" % m for m in months]
+        # Gather all monthly for this season into one dict.
+        d = {}
         for m in months:
-            row = monthly_anom[m] # the list of anomalies for month m
-            if m == 11:
-                # For December, we take the December of the previous
-                # year.  Which we do by shifting the array, and not
-                # using the most recent December.
-                row[1:] = row[:-1]
-                row[0] = MISSING
-            month_in_season.append(row)
-        seasonal_anom_row = []
-        for n in range(years):
-            m = valid_mean((data[n] for data in month_in_season),
-                           min = 2)
-            seasonal_anom_row.append(m)
-        seasonal_anom.append(seasonal_anom_row)
-
-    # Average seasonal means to make annual mean,
-    # and average seasonal anomalies to make annual anomalies
-    # (note: annual anomalies are December-to-November).
-    annual_mean = valid_mean(seasonal_mean, min = 3)
-    annual_anom = []
-    for n in range(years):
-        annual_anom.append(valid_mean((data[n] for data in seasonal_anom),
-                                      min = 3))
-    return (annual_mean, annual_anom)
-
+            d.update(monthly_anom[m])
+        # Initialise the dict used for the seasonal series
+        season = {}
+        for year,ks in itertools.groupby(sorted(d), key=key_metyear):
+            vs = [d[k] for k in ks]
+            if len(vs) >= 2:
+                v = sum(vs)/float(len(vs))
+                season[year] = v
+        seasonal_anom.append(season)
+    return seasonal_mean, seasonal_anom
 
 def aslist(series, base, limit):
     """Convert the dict *series* into a list (using giss_data.MISSING

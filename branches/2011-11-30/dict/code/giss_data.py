@@ -324,15 +324,11 @@ class Series(object):
         return [self.get_a_year(y) for y in range(first_year, last_year + 1)]
 
     def set_ann_anoms(self, ann_anoms):
-        self.ann_anoms[:] = ann_anoms
+        self.ann_anoms = dict(ann_anoms)
 
     def ann_anoms_good_count(self):
         """Number of good values in the annual anomalies"""
-        bad = 0
-        for v in self.ann_anoms:
-            bad += invalid(v)
-        good_count = len(self.ann_anoms) - bad
-        return good_count
+        return len(self.ann_anoms)
 
     @property
     def station_uid(self):
