@@ -260,9 +260,18 @@ def find_quintuples(sums, wgts, record, new_id, log):
 
 def adjust_helena(stream):
     """Modifies records as specified in config/combine_pieces_helena.in,
-    by adding the delta to every datum for that station prior to the
-    specified month.
+    by adding the delta to every datum for the early part of the station
+    series up to and including the specified month.
+
+    (In the config file) the month is specified as being from 1 to
+    12.  So "1976 8" in the file is August 1976.  This agrees with
+    Hansen et al 1999 which says: "we added 1C to the St. Helena
+    temperatures before September 1976."  However, the GISTEMP code
+    will actually adjust the September datum, except that the record
+    that is adjusted does not have a September datum (but can, if
+    you start messing around with the input data).
     """
+
     helena_ds = read_config.get_helena_dict()
     for record in stream:
         id = record.uid
@@ -272,7 +281,7 @@ def adjust_helena(stream):
             begin = record.first_year
             # Dict key for the month specified in the config file.
             M = "%04d-%02d" % (this_year, month)
-            # All valid data up to and including M get adjusted
+            # All valid data up to and including M get adjusted.
             for k in series:
                 if k <= M:
                     series[k] += summand
