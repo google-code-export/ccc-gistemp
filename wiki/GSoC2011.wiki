@@ -1,0 +1,32 @@
+#summary Google Summer of Code 2011
+
+= Introduction =
+
+Climate Code Foundation's list of projects and ideas for Google Summer of Code 2011 (GSoC).  GSoC is a programme funded by Google where students work on open source projects and earn a stipend for doing so.
+
+Please discuss these projects and make suggestions: either here in a comment, or on the <a href="http://groups.google.com/group/ccc-gistemp-discuss?pli=1">mailing list</a>.
+
+= Ideas =
+
+Flexible Grids.  Replace the 8000 cell equal area grid, which is unique to the GISTEMP analysis, with a flexible gridding system so that "industry standard" grids can be used.  These seem mostly to be simple NxN degree grids.  There some overlap with _GIS Integration_ because GIS tools may expect a regular grid.  This will require Python expertise and a willingness to get very intimate with the internals of ccc-gistemp.
+
+GIS Integration.  The current GISTEMP products (gridded and zonal) are in binary formats that are peculiar to GISTEMP.  We would like to see output files that can be plugged straight into industry standard GIS tools.  We are not experts in this field, we would require that the student bring GIS expertise to the table, and be capable of making sensible choices regarding tools and formats.  We expect that this idea could be completed without needing to get bogged down with the internals of ccc-gistemp.
+
+Excel Integration.  This is somewhat open ended.  The idea here is to engage with people who use Excel (which we generally don't).  Could be as simple as providing the time series products in a file format that can be opened in Excel without any further processing, to an example complete analysis done entirely in Excel.
+
+Alternate R Implementation. ("R" is a codeword for "some language other than Python")  Being aware that Python is not as popular as we would like in some communities, we see a need for Clear implementations (of GISTEMP style analyses) in other languages.  R has a good track record in certain communities, and is entirely Open Source (so we would prefer it over IDL or MATLAB, say).  We would not expect the same "bug for bug" compatible approach that ccc-gistemp takes.  Given the timescales, we would expect a simpler approach would be taken.  We could advise.
+
+CRUTEM Implementation.  We can't see the code for CRUTEM, but perhaps you, a student at the Met Office or CRU, _can_?  Get the bosses to sign off on making a replica Open Source version in a language like Python, and have at it.
+
+Menne/Williams Homogenization Algorithm. (this is also a placeholder for any other climate science related algorithm that is a similar size to GISTEMP: a few thousand lines at most).  There aren't many fully automated temperature record homogenization algorithms that are intended to be deployed on a global network.  This is one of them; it's the algorithm used in the GHCN v3 adjusted dataset, described in "Menne, M.J., and C.N. Williams, Jr., 2009: Homogenization of temperature series via pairwise comparisons. Journal of Climate, 22, 1700-1717, doi: 10.1175/2008JCLI2263.1.".  It's a FORTRAN 77 program.  Clear rewrite (in Python?).
+
+Super Whizzy Browser.  A really cool super whizzy dataset and station record browser where you can see the time series, gridded datasets, stations, and the station combinations and adjustments made.  Allows "drilling down" to see how any particular part of the global time series is comprised of combinations of cells and stations, and "drilling up" to see how stations combine to form averages over larger areas.  Also allows inspection of the internals of GISTEMP to show exactly how stations combine, and the periods and references series used for the urban adjustment (say).
+
+Alternate numpy Implementation.  ccc-gistemp is never quite as fast as we'd like (because of the emphasis on clarity).  Most of the time is spent inside a very small amount of code (primarily series.combine).  We don't advocate requiring non-standard Python modules (such as numpy) in order to run ccc-gistemp, but it may be a good idea to exploit them if they are available.  Provide a "drop-in" replacement for a small amount of the ccc-gistemp code that accelerates it if numpy is available.  Would require Python and numpy expertise.
+
+Publication Quality Figures.  The figures and charts that ccc-gistemp produces, such as the one on the <a href="http://code.google.com/p/ccc-gistemp/">project googlecode home page</a>, are fine for simple visualisation and checking, but are no good if one wants a figure for a scientific publication.  The current figures require no additional software to be installed, but we see no reason (similar to the _Alternate numpy Implementation_) why extra optional tools that produced publication quality figures could not require some additional installation.  We would expect a suitable framework to be identified (matplotlib / rpy / something we haven't heard of).
+
+Every Published Figure.  Take a publication like http://pubs.giss.nasa.gov/cgi-bin/abstract.cgi?id=ha00510u (Hansen et al 2010) and make sure that we have software that can do a ccc-gistemp version of every figure in there.
+
+
+We are very open to further suggestions.
