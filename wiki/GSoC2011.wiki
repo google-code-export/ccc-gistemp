@@ -8,7 +8,7 @@ Please discuss these projects and make suggestions: either here in a comment, or
 
 = Ideas =
 
-Flexible Grids.  Replace the 8000 cell equal area grid, which is unique to the GISTEMP analysis, with a flexible gridding system so that "industry standard" grids can be used.  These seem mostly to be simple NxN degree grids.  There some overlap with _GIS Integration_ because GIS tools may expect a regular grid.  This will require Python expertise and a willingness to get very intimate with the internals of ccc-gistemp.
+Flexible Grids.  Replace the 8000 cell equal area grid, which is unique to the GISTEMP analysis, with a flexible gridding system so that "industry standard" grids can be used.  These seem mostly to be simple NxN degree grids.  There is some overlap with _GIS Integration_ because GIS tools may expect a regular grid.  This will require Python expertise and a willingness to get very intimate with the internals of ccc-gistemp.
 
 GIS Integration.  The current GISTEMP products (gridded and zonal) are in binary formats that are peculiar to GISTEMP.  We would like to see output files that can be plugged straight into industry standard GIS tools.  We are not experts in this field, we would require that the student bring GIS expertise to the table, and be capable of making sensible choices regarding tools and formats.  We expect that this idea could be completed without needing to get bogged down with the internals of ccc-gistemp.
 
