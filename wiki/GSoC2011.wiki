@@ -8,9 +8,11 @@ Please discuss these projects and make suggestions: either here in a comment, or
 
 = Ideas =
 
-Flexible Grids.  Replace the 8000 cell equal area grid, which is unique to the GISTEMP analysis, with a flexible gridding system so that "industry standard" grids can be used.  These seem mostly to be simple NxN degree grids.  There is some overlap with _GIS Integration_ because GIS tools may expect a regular grid.  This will require Python expertise and a willingness to get very intimate with the internals of ccc-gistemp.
+Flexible Grids.  Replace the 8000 cell equal area grid, which is unique to the GISTEMP analysis, with a flexible gridding system so that "industry standard" grids can be used.  These seem mostly to be simple NxN or NxM degree grids.  There is some overlap with _GIS Integration_ because GIS tools may expect a regular grid.  This will require Python expertise and a willingness to get very intimate with the internals of ccc-gistemp.
 
 GIS Integration.  The current GISTEMP products (gridded and zonal) are in binary formats that are peculiar to GISTEMP.  We would like to see output files that can be plugged straight into industry standard GIS tools.  We are not experts in this field, we would require that the student bring GIS expertise to the table, and be capable of making sensible choices regarding tools and formats.  We expect that this idea could be completed without needing to get bogged down with the internals of ccc-gistemp.
+
+One-click Packaging.  Any interested party would currently need Python and a certain level of gumption to download and run ccc-gistemp (although it's a lot easier than GISTEMP, which requires Fortran, Python, C++, ksh, awk, sed, a big-endian machine, and a following wind).  This idea is to make it more shrink-wrapped and easy-access, from download, data acquisition, processing, and display of results.  Possibly part of this will involve using py2exe for Windows, although other platforms are important too.  We want it to be easy enough that even busy journalists can run it.
 
 Excel Integration.  This is somewhat open ended.  The idea here is to engage with people who use Excel (which we generally don't).  Could be as simple as providing the time series products in a file format that can be opened in Excel without any further processing, to an example complete analysis done entirely in Excel.
 
@@ -28,5 +30,6 @@ Publication Quality Figures.  The figures and charts that ccc-gistemp produces, 
 
 Every Published Figure.  Take a publication like http://pubs.giss.nasa.gov/cgi-bin/abstract.cgi?id=ha00510u (Hansen et al 2010) and make sure that we have software that can do a ccc-gistemp version of every figure in there.
 
+Climate Code Directory.  This is not a ccc-gistemp project.  We have plans for a "Climate Code Directory": a comprehensive and searchable catalogue of published climate science software. We aim to make it possible to quickly discover any available code underpinning a given climate science publication.  This will obviously need quite a bit of web development, presumably RDF and Semantic Web.  If you don't know what "Dublin Core" means, this is probably not for you.
 
-We are very open to further suggestions.
+We are very open to further suggestions, and will update this page over time.
