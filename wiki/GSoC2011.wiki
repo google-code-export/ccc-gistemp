@@ -1,4 +1,5 @@
 #summary Google Summer of Code 2011
+#labels Featured
 
 = Introduction =
 
