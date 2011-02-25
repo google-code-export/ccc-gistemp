@@ -43,15 +43,15 @@ http://groups.google.com/group/ccc-gistemp-discuss?pli=1
 
    8. What is the main IRC channel for your organization?
 
-Don't currently have one [perhaps we should?].
+Don't currently have one (perhaps we should?).
 
    9. Does your organization have an application template you would like to see students use? If so, please provide it now.
 
-[perhaps we should have on]
+(perhaps we should have on)
 
   10. Who will be your backup organization administrator?
 
-[probably pkd]
+(probably pkd)
 
   11. What criteria did you use to select these individuals as mentors? Please be as specific as possible.
 
@@ -63,11 +63,11 @@ The criteria we used were:
 
   12. What is your plan for dealing with disappearing students?
 
-[hmm, good question.]
+(hmm, good question.)
 
   13. What is your plan for dealing with disappearing mentors?
 
-[again, good question.]
+(again, good question.)
 
   14. What steps will you take to encourage students to interact with your project's community before, during and after the program?
 
@@ -75,4 +75,4 @@ Baseball bat.
 
   15. What will you do to ensure that your accepted students stick with the project after Google Summer of Code concludes?
 
-[good question]
+(good question)
