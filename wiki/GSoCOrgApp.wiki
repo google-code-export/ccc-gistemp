@@ -69,7 +69,7 @@ To maximise your chance of working with us in this year's Summer of Code, your a
 
 - Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
 
-- Why choose the Climate Code Foundation?  What do we have that 
+- Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
 
 == 10. Who will be your backup organization administrator? ==
 
@@ -87,7 +87,7 @@ The criteria we used were:
 
 As software contractors and consultants we have long experience of software subcontract management.  The key risk in that area is non-delivery, and the key activity to reduce that risk is regular tracking and oversight.
 
-If a student is losing interest or motivation, or not progressing with the project, the key thing is to discover this and take action as soon as possible.  By maintaining regular contact with the student throughout the project
+If a student is losing interest or motivation, or not progressing with the project, we need to discover this and take action as soon as possible.
 
 == 13. What is your plan for dealing with disappearing mentors? ==
 
