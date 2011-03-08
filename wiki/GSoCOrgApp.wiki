@@ -10,7 +10,9 @@ Climate Code Foundation
 
 == Description ==
 
-The Climate Code Foundation is a non-profit organization with the goal of promoting the public understanding of climate science.  We promote good software engineering practices for scientists, with a key emphasis on Open Source software.  An important part of our work is creating Open Source software: for data analysis and visualisation in climate science, and to help the public understand the structures and systems of climate science (e.g. institutions, publications, funding, etc).
+The Climate Code Foundation is a new small non-profit organization with the goal of promoting the public understanding of climate science.  We promote good software engineering practices for scientists, with a key emphasis on Open Source software.  An important part of our work is creating Open Source software: for data analysis and visualisation in climate science, and to help the public understand the structures and systems of climate science (e.g. institutions, publications, funding, etc).
+
+We have been doing open-source climate software (ccc-gistemp) since 2008 - we continue that work within the Foundation.  Our staff have been working as software consultants since 1990, and have been active open-source developers for many years.
 
 Our goals are documented here: http://climatecode.org/about/goals/ and further information can be found at the Foundation home page: http://climatecode.org/
 
@@ -111,7 +113,9 @@ We expect all the mentors to be Foundation staff, there is negligible possibilit
 
 == If you are a small or new organization applying to GSoC, please list a larger, established GSoC organization or a Googler that can vouch for you here. ==
 
-Software Carpentry? Bugzilla? RIT?
+Greg Wilson of Software Carpentry has mentored every year and agreed to vouch for us.
+NB has asked Gerv at Bugzilla.org.
+DRJ has asked RIT at Google.
 
 == If you are a large organization who is vouching for a small organization applying to GSoC for their first time this year, please list their name and why you think they'd be good candidates for GSoC here: ==
 
