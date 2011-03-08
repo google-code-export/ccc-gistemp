@@ -68,7 +68,7 @@ As a small organisation with limited language skills, we are not likely to be ab
 
 To maximise your chance of working with us in this year's Summer of Code, your application must provide the following information about you:
 
- * Name and contact information.
+ * Name and contact information: email, phone, IM, Skype?
 
  * Location and language.
 
@@ -101,24 +101,36 @@ We think abrupt disappearance of a student is unlikely.  Far more likely is grad
 
 If a student is losing interest or motivation, or not progressing with the project, we need to discover this and take action as soon as possible.  With that in mind, we will request detailed email progress updates from students once per week, in addition to more-frequent informal interaction (email, IM, phone).  Through this interaction we can identify problems early and take action accordingly.
 
-If a student is losing interest in their project, or finds that they lack a necessary skill or resource, we will help students to find alternative ways of moving forward.  Our organisation goals are very broad, and there are many different project outcomes which could promote those goals.  We are long-standing advocates of evolutionary development: specifications should always evolve over the course of a project.  A project which exactly meets an initial specification is less use than one which has evolved over time to meet an improved specification.
+If a student is losing interest in their project, or finds that they lack a necessary skill or resource, we will help him or her to find alternative ways of moving forward.  Our organisation goals are very broad, and there are many different project outcomes which could promote those goals.  We are long-standing advocates of evolutionary development: specifications should always evolve over the course of a project.  A project which exactly meets an initial specification is less use than one which has evolved over time to meet an improved specification.
 
 Regarding abrupt disappearance of a student, or the eventual finding that a student cannot develop their project into something which suits both the students and ourselves, we note that none of our project ideas are critical to the success of the Foundation, so ultimately if a project fails our organization is not at risk.
 
 == What is your plan for dealing with disappearing mentors? ==
 
-We expect all the mentors to be Foundation staff, there is negligible possibility that they will disappear. Nonetheless, we have backup mentors, and we expect most communications to be shared so that other mentors can be kept up to speed should they need to step in.
+It is most likely that the mentors will be Foundation staff, in  which case there is negligible likelihood that they will disappear.  It is possible that a mentor will be a US academic associated with the Open Climate Project.  In either case, we have backup mentors, and we expect most communications to be shared so that other mentors can be kept up to speed should they need to step in.
 
 == What steps will you take to encourage students to interact with your project's community before, during and after the program? ==
 
+ * Before: we are already in contact with ten potential students, after announcing our possible involvement in GSoC2011 on our blog and a couple of climate-science mailing lists.  Students are free to join our ccc-gistemp mailing list, and after confirmation as a mentoring organisation, we will encourage potential students to do so, as well as establishing a gsoc2011@climatecode.org mailing list. We will work with students in project proposal development.
+
+After project selection, we will contact selected students directly and engage with them individually, inviting them to meet us in person and chatting with them by IM as they find their way around our existing code base or the problem domain of their project.  We will create individual per-project mailing lists @climatecode.org, to be cc'ed on all proejct-specific email.
+
+ * During: As detailed above, we will require weekly email progress updates, and encourage more frequent chats via email, IM, or phone.  For students in Western Europe, we may be able to meet in person once or twice during the project.  For some projects (for instance, our Climate Code Directory idea), we may be taking part in software development alongside the student.
+
+ * After: For successful projects with ongoing post-project development work, we would certainly keep the per-project mailing list running, and encourage the student to remain on it.  Many of our project ideas will connect naturally with parts of the climate science community, and we expect students on such projects will form networks through that.
+
+ * Long-term: We hope to take part in GSoC again in future years, and would encourage any successful student to re-apply.  Some projects may be routes into professional climate science.
+
 == If you are a small or new organization applying to GSoC, please list a larger, established GSoC organization or a Googler that can vouch for you here. ==
 
-Greg Wilson of Software Carpentry has mentored every year and agreed to vouch for us.
+Richard Tucker <richardt@google.com> has known all of us for many years and will vouch for us.
+Greg Wilson of Software Carpentry has mentored every year for various projects (e.g. Python Software Foundation) and will vouch for us.
 NB has asked Gerv at Bugzilla.org.
-DRJ has asked RIT at Google.
 
 == If you are a large organization who is vouching for a small organization applying to GSoC for their first time this year, please list their name and why you think they'd be good candidates for GSoC here: ==
 
 Not applicable.
 
 == Anything else you'd like to tell us? ==
+
+By supporting the Climate Code Foundation through Google Summer of Code, Google will improve the public understanding of climate science, which we hope may have very positive consequences for humanity.
