@@ -10,7 +10,7 @@ Climate Code Foundation
 
 == Description ==
 
-The Climate Code Foundation is a new small non-profit organization with the goal of promoting the public understanding of climate science.  We promote good software engineering practices for scientists, with a key emphasis on Open Source software.  An important part of our work is creating Open Source software: for data analysis and visualisation in climate science, and to help the public understand the structures and systems of climate science (e.g. institutions, publications, funding, etc).
+The Climate Code Foundation is a new small non-profit organization with the goal of promoting the public understanding of climate science.  We promote good software engineering practices for scientists, with a key emphasis on Open Source software.  An important part of our work is creating Open Source software, including code which has moved under our umbrella from previous projects.  We write code for data analysis and visualisation in climate science, to present climate science data processing in a clear accessible form, and to help the public understand the structures and systems of climate science (e.g. institutions, publications, funding, etc).
 
 We have been doing open-source climate software (ccc-gistemp) since 2008 - we continue that work within the Foundation.  Our staff have been working as software consultants since 1990, and have been active open-source developers for many years.
 
@@ -30,6 +30,7 @@ We hope to:
  * improve the public understanding of climate science;
  * promote better practices among climate scientists;
  * foster the Open Source spirit among aspiring students;
+ * grow the community around the Foundation;
  * increase the public visibility of the Foundation.
 
 == If accepted, would this be your first year participating in GSoC? ==
@@ -64,6 +65,8 @@ irc://irc.oftc.net/ccf/
 
 Thank you for considering the Climate Code Foundation as your mentoring organisation for Google Summer of Code 2011.  We hope to work with you to produce a successful project, increasing public understanding of climate science.
 
+You should submit your proposal in plain text.  Proposals in proprietary formats, including Microsoft Word or PowerPoint, will not be read.
+
 As a small organisation with limited language skills, we are not likely to be able to mentor you successfully unless you are fluent in English.  Also, mentoring is more likely to succeed if you are able to meet us in the UK at least once.
 
 To maximise your chance of working with us in this year's Summer of Code, your application must provide the following information about you:
@@ -83,6 +86,8 @@ To maximise your chance of working with us in this year's Summer of Code, your a
  * Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
 
  * Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
+
+ * Explain your project proposal, including the intended deliverables.  How will your project promote the public understanding of climate science?
 
 == What criteria did you use to select the individuals who will act as mentors for your organization? Please be as specific as possible. ==
 
@@ -111,9 +116,9 @@ It is most likely that the mentors will be Foundation staff, in  which case ther
 
 == What steps will you take to encourage students to interact with your project's community before, during and after the program? ==
 
- * Before: we are already in contact with ten potential students, after announcing our possible involvement in GSoC2011 on our blog and a couple of climate-science mailing lists.  Students are free to join our ccc-gistemp mailing list, and after confirmation as a mentoring organisation, we will encourage potential students to do so, as well as establishing a gsoc2011@climatecode.org mailing list. We will work with students in project proposal development.
+ * Before: we are already in contact with ten potential students, after announcing our possible involvement in GSoC2011 on our blog and a couple of climate-science mailing lists.  We expect more to appear once the Foundation is accepted as a mentoring organisation.  Students are free to join our ccc-gistemp mailing list, and after confirmation as a mentoring organisation, we will encourage potential students to do so, as well as establishing a gsoc2011@climatecode.org mailing list. We will work with students in project proposal development.
 
-After project selection, we will contact selected students directly and engage with them individually, inviting them to meet us in person and chatting with them by IM as they find their way around our existing code base or the problem domain of their project.  We will create individual per-project mailing lists @climatecode.org, to be cc'ed on all proejct-specific email.
+After project selection, we will contact selected students directly and engage with them individually, inviting them to meet us in person and chatting with them by IM as they find their way around our existing code base or the problem domain of their project.  We will create individual per-project mailing lists @climatecode.org, to be cc'ed on all project-specific email.
 
  * During: As detailed above, we will require weekly email progress updates, and encourage more frequent chats via email, IM, or phone.  For students in Western Europe, we may be able to meet in person once or twice during the project.  For some projects (for instance, our Climate Code Directory idea), we may be taking part in software development alongside the student.
 
