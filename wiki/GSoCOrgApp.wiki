@@ -11,14 +11,16 @@ http://www.google-melange.com/document/show/gsoc_program/google/gsoc2011/faqs#me
 
 == 1. Describe your organization. ==
 
-Climate Code Foundation is a non-profit with the goal of promoting the public understanding of climate science.  We promote good software engineering practices amongst scientists, with a key emphasis on Open Source software.  Our goals are documented here: http://climatecode.org/about/goals/ and further information can be found at the Foundation home page: http://climatecode.org/
+The Climate Code Foundation is a non-profit organization with the goal of promoting the public understanding of climate science.  We promote good software engineering practices for scientists, with a key emphasis on Open Source software.  An important part of our work is creating Open Source software: for data analysis and visualisation in climate science, and to help the public understand the structures and systems of climate science (e.g. institutions, publications, funding, etc).
+
+Our goals are documented here: http://climatecode.org/about/goals/ and further information can be found at the Foundation home page: http://climatecode.org/
 
 == 2. Why is your organization applying to participate in Google Summer of Code 2011? What do you hope to gain by participating? ==
 
 We hope to:
  * improve the public understanding of climate science;
  * increase the public visibility of CCF;
- * promote better practice amongst climate scientists;
+ * promote better practices amongst climate scientists;
  * foster the Open Source spirit amongst aspiring students.
 
 == 3. Did your organization participate in past Google Summer of Codes? If so, please summarize your involvement and the successes and challenges of your participation. ==
@@ -43,15 +45,35 @@ http://groups.google.com/group/ccc-gistemp-discuss?pli=1
 
 == 8. What is the main IRC channel for your organization? ==
 
-Don't currently have one (perhaps we should?).
+irc://irc.oftc.net/ccf/
+
+(although we don't generally use IRC much).
 
 == 9. Does your organization have an application template you would like to see students use? If so, please provide it now. ==
 
-(perhaps we should have one)
+Thank you for considering the Climate Code Foundation as your mentoring organisation for Google Summer of Code 2011.  We hope to work with you to produce a successful project, increasing public understanding of climate science.
+
+As a small organisation with limited language skills, we are not likely to be able to mentor you successfully unless you are fluent in English.  Also, mentoring is more likely to succeed if you are able to meet us in the UK at least once.
+
+To maximise your chance of working with us in this year's Summer of Code, your application must provide the following information about you:
+
+- Location and language.
+
+- Level of experience in scientific or numeric computation.  Which is your favourite Fortran compiler, and why?  Matlab?  Mathematica?   Numpy/Scipy?  NAG?  Have you written FFT code?  Used a wavelet transform?  Debugged someone else's crufty old data-processing code?
+
+- Level of experience with open-source software.  Do you know what "open-source" means?  Have you read "the Cathedral and the Bazaar"?  Do you use open-source software tools?  Linux?  GCC?  Eclipse?  Have you contributed to any open-source software before?
+
+- Level of experience with Python or other open-source languages used by scientists (e.g. R).  Have you used them?  Do you use them regularly in your work or study?
+
+- Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Have you ever written one?
+
+- Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
+
+- Why choose the Climate Code Foundation?  What do we have that 
 
 == 10. Who will be your backup organization administrator? ==
 
-(probably pkd)
+Philippa Davey <pkd@climatecode.org>
 
 == 11. What criteria did you use to select these individuals as mentors? Please be as specific as possible. ==
 
@@ -63,7 +85,9 @@ The criteria we used were:
 
 == 12. What is your plan for dealing with disappearing students? ==
 
-(hmm, good question.)
+As software contractors and consultants we have long experience of software subcontract management.  The key risk in that area is non-delivery, and the key activity to reduce that risk is regular tracking and oversight.
+
+If a student is losing interest or motivation, or not progressing with the project, the key thing is to discover this and take action as soon as possible.  By maintaining regular contact with the student throughout the project
 
 == 13. What is your plan for dealing with disappearing mentors? ==
 
