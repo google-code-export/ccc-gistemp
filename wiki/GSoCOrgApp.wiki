@@ -2,54 +2,63 @@
 
 = Introduction =
 
-CCF is planning to be a Google Summer of Code organisation.  There will be an application to fill in, with questions similar to those listed in the FAQ:
+CCF is planning to be a Google Summer of Code organisation.  There is an application to fill in, with the following questions:
 
-http://www.google-melange.com/document/show/gsoc_program/google/gsoc2011/faqs#mentor_app
+== Organization Name == 
 
+Climate Code Foundation
 
-= Questions and Responses =
-
-== 1. Describe your organization. ==
+== Description ==
 
 The Climate Code Foundation is a non-profit organization with the goal of promoting the public understanding of climate science.  We promote good software engineering practices for scientists, with a key emphasis on Open Source software.  An important part of our work is creating Open Source software: for data analysis and visualisation in climate science, and to help the public understand the structures and systems of climate science (e.g. institutions, publications, funding, etc).
 
 Our goals are documented here: http://climatecode.org/about/goals/ and further information can be found at the Foundation home page: http://climatecode.org/
 
-== 2. Why is your organization applying to participate in Google Summer of Code 2011? What do you hope to gain by participating? ==
+== Home page ==
+
+http://climatecode.org/
+
+== Main Organization License ==
+
+New and simplified BSD licenses
+
+== Why is your organization applying to participate in GSoC 2011? What do you hope to gain by participating? ==
 
 We hope to:
  * improve the public understanding of climate science;
- * increase the public visibility of CCF;
- * promote better practices amongst climate scientists;
- * foster the Open Source spirit amongst aspiring students.
+ * promote better practices among climate scientists;
+ * foster the Open Source spirit among aspiring students;
+ * increase the public visibility of the Foundation.
 
-== 3. Did your organization participate in past Google Summer of Codes? If so, please summarize your involvement and the successes and challenges of your participation. ==
+== If accepted, would this be your first year participating in GSoC? ==
 
-Did not participate.
+Yes
 
-== 4. If your organization has not previously participated in Google Summer of Code, have you applied in the past? If so, for what year(s)? ==
+== Did your organization participate in past GSoCs? If so, please summarize your involvement and the successes and challenges of your participation. ==
 
-Have not applied.
+Not applicable
 
-== 5. What license(s) does your project use? ==
+== If your organization participated in past GSoCs, please let us know the ratio of students passing to students allocated, e.g. 2006: 3/6 for 3 out of 6 students passed in 2006. ==
 
-For source code, we use the 3-clause BSD licence: http://www.opensource.org/licenses/bsd-license.php
+Not applicable
 
-== 6. What is the URL for your Ideas page? ==
+== What is the URL for your ideas page? ==
 
 http://code.google.com/p/ccc-gistemp/wiki/GSoC2011
 
-== 7. What is the main development mailing list for your organization? ==
+== What is the main development mailing list for your organization? This question will be shown to students who would like to get more information about applying to your organization for GSoC 2011. If your organization uses more than one list, please make sure to include a description of the list so students know which to use.==
+
+Most of our software development has been on the "Clear Climate Code GISTEMP" project, which has a Google Groups discussion list:
 
 http://groups.google.com/group/ccc-gistemp-discuss?pli=1
 
-== 8. What is the main IRC channel for your organization? ==
+== What is the main IRC channel for your organization? ==
 
 irc://irc.oftc.net/ccf/
 
 (although we don't generally use IRC much).
 
-== 9. Does your organization have an application template you would like to see students use? If so, please provide it now. ==
+== Does your organization have an application template you would like to see students use? If so, please provide it now. Please note that it is a very good idea to ask students to provide you with their contact information as part of your template. Their contact details will not be shared with you automatically via the GSoC 2011 site. ==
 
 Thank you for considering the Climate Code Foundation as your mentoring organisation for Google Summer of Code 2011.  We hope to work with you to produce a successful project, increasing public understanding of climate science.
 
@@ -57,46 +66,55 @@ As a small organisation with limited language skills, we are not likely to be ab
 
 To maximise your chance of working with us in this year's Summer of Code, your application must provide the following information about you:
 
-- Location and language.
+* Name and contact information
 
-- Level of experience in scientific or numeric computation.  Which is your favourite Fortran compiler, and why?  Matlab?  Mathematica?   Numpy/Scipy?  NAG?  Have you written FFT code?  Used a wavelet transform?  Debugged someone else's crufty old data-processing code?
+* Location and language.
 
-- Level of experience with open-source software.  Do you know what "open-source" means?  Have you read "the Cathedral and the Bazaar"?  Do you use open-source software tools?  Linux?  GCC?  Eclipse?  Have you contributed to any open-source software before?
+* Level of experience in scientific or numeric computation.  Which is your favourite Fortran compiler, and why?  Matlab?  Mathematica?   Numpy/Scipy?  NAG?  Have you written FFT code?  Used a wavelet transform?  Debugged someone else's crufty old data-processing code?
 
-- Level of experience with Python or other open-source languages used by scientists (e.g. R).  Have you used them?  Do you use them regularly in your work or study?
+* Level of experience with open-source software.  Do you know what "open-source" means?  Have you read "the Cathedral and the Bazaar"?  Do you use open-source software tools?  Linux?  GCC?  Eclipse?  Have you contributed to any open-source software before?
 
-- Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Have you ever written one?
+* Level of experience with Python or other open-source languages used by scientists (e.g. R).  Have you used them?  Do you use them regularly in your work or study?
 
-- Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
+* Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Have you ever written one?
 
-- Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
+* Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
 
-== 10. Who will be your backup organization administrator? ==
+* Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
 
-Philippa Davey <pkd@climatecode.org>
-
-== 11. What criteria did you use to select these individuals as mentors? Please be as specific as possible. ==
+== What criteria did you use to select the individuals who will act as mentors for your organization? Please be as specific as possible. ==
 
 The criteria we used were:
- * availability;
- * commitment to the goals of the Foundation;
- * track record in managing software projects;
- * technical expertise in the relevant areas.
 
-== 12. What is your plan for dealing with disappearing students? ==
+* availability;
+* commitment to the goals of the Foundation;
+* track record in managing software projects;
+* technical expertise in the relevant areas.
 
-As software contractors and consultants we have long experience of software subcontract management.  The key risk in that area is non-delivery, and the key activity to reduce that risk is regular tracking and oversight.
+== What is your plan for dealing with disappearing students? ==
 
-If a student is losing interest or motivation, or not progressing with the project, we need to discover this and take action as soon as possible.
+As software contractors and consultants we have long experience of software subcontract management.  The key risk in that area is non-delivery, and the key activity to reduce that risk is regular interaction, tracking and oversight.
 
-== 13. What is your plan for dealing with disappearing mentors? ==
+We think abrupt disappearance of a student is unlikely.  Far more likely is gradual disaffection or failure to progress, leading to eventual "disappearance".
 
-(again, good question.)
+If a student is losing interest or motivation, or not progressing with the project, we need to discover this and take action as soon as possible.  With that in mind, we will request detailed email progress updates from students once per week, in addition to more-frequent informal interaction (email, IM, phone).  Through this interaction we can identify problems early and take action accordingly.
 
-== 14. What steps will you take to encourage students to interact with your project's community before, during and after the program? ==
+If a student is losing interest in their project, or finds that they lack a necessary skill or resource, we will help students to find alternative ways of moving forward.  Our organisation goals are very broad, and there are many different project outcomes which could promote those goals.  We are long-standing advocates of evolutionary development: specifications should always evolve over the course of a project.  A project which exactly meets an initial specification is less use than one which has evolved over time to meet an improved specification.
 
-Baseball bat.
+Regarding abrupt disappearance of a student, or the eventual finding that a student cannot develop their project into something which suits both the students and ourselves, we note that none of our project ideas are critical to the success of the Foundation, so ultimately if a project fails our organization is not at risk.
 
-== 15. What will you do to ensure that your accepted students stick with the project after Google Summer of Code concludes? ==
+== What is your plan for dealing with disappearing mentors? ==
 
-(good question)
+We expect all the mentors to be Foundation staff, there is negligible possibility that they will disappear. Nonetheless, we have backup mentors, and we expect most communications to be shared so that other mentors can be kept up to speed should they need to step in.
+
+== What steps will you take to encourage students to interact with your project's community before, during and after the program? ==
+
+== If you are a small or new organization applying to GSoC, please list a larger, established GSoC organization or a Googler that can vouch for you here. ==
+
+Software Carpentry? Bugzilla? RIT?
+
+== If you are a large organization who is vouching for a small organization applying to GSoC for their first time this year, please list their name and why you think they'd be good candidates for GSoC here: ==
+
+Not applicable.
+
+== Anything else you'd like to tell us? ==
