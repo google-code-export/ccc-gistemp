@@ -66,30 +66,30 @@ As a small organisation with limited language skills, we are not likely to be ab
 
 To maximise your chance of working with us in this year's Summer of Code, your application must provide the following information about you:
 
-* Name and contact information
+ * Name and contact information.
 
-* Location and language.
+ * Location and language.
 
-* Level of experience in scientific or numeric computation.  Which is your favourite Fortran compiler, and why?  Matlab?  Mathematica?   Numpy/Scipy?  NAG?  Have you written FFT code?  Used a wavelet transform?  Debugged someone else's crufty old data-processing code?
+ * Level of experience in scientific or numeric computation.  Which is your favourite Fortran compiler, and why?  Matlab?  Mathematica?   Numpy/Scipy?  NAG?  Have you written FFT code?  Used a wavelet transform?  Debugged someone else's crufty old data-processing code?
 
-* Level of experience with open-source software.  Do you know what "open-source" means?  Have you read "the Cathedral and the Bazaar"?  Do you use open-source software tools?  Linux?  GCC?  Eclipse?  Have you contributed to any open-source software before?
+ * Level of experience with open-source software.  Do you know what "open-source" means?  Have you read "the Cathedral and the Bazaar"?  Do you use open-source software tools?  Linux?  GCC?  Eclipse?  Have you contributed to any open-source software before?
 
-* Level of experience with Python or other open-source languages used by scientists (e.g. R).  Have you used them?  Do you use them regularly in your work or study?
+ * Level of experience with Python or other open-source languages used by scientists (e.g. R).  Have you used them?  Do you use them regularly in your work or study?
 
-* Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Have you ever written one?
+ * Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Have you ever written one?
 
-* Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
+ * Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
 
-* Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
+ * Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
 
 == What criteria did you use to select the individuals who will act as mentors for your organization? Please be as specific as possible. ==
 
 The criteria we used were:
 
-* availability;
-* commitment to the goals of the Foundation;
-* track record in managing software projects;
-* technical expertise in the relevant areas.
+ * availability;
+ * commitment to the goals of the Foundation;
+ * track record in managing software projects;
+ * technical expertise in the relevant areas.
 
 == What is your plan for dealing with disappearing students? ==
 
