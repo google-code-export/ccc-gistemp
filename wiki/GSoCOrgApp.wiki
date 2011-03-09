@@ -73,7 +73,7 @@ To maximise your chance of working with us in this year's Summer of Code, your a
 
  * Name and contact information: email, phone, IM, Skype?
 
- * Location and language.
+ * Location, timezone, and language.
 
  * Level of experience in scientific or numeric computation.  Which is your favourite Fortran compiler, and why?  Matlab?  Mathematica?   Numpy/Scipy?  NAG?  Have you written FFT code?  Used a wavelet transform?  Debugged someone else's crufty old data-processing code?
 
@@ -85,9 +85,13 @@ To maximise your chance of working with us in this year's Summer of Code, your a
 
  * Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
 
+ * Why are you intending to participate in Google Summer of Code?
+
  * Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
 
  * Explain your project proposal, including the intended deliverables.  How will your project promote the public understanding of climate science?
+
+ * What other summer activities are you planning? (for example, travel, workshops, study)
 
 == What criteria did you use to select the individuals who will act as mentors for your organization? Please be as specific as possible. ==
 
