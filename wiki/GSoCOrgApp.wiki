@@ -152,7 +152,7 @@ After project selection, we will contact selected students directly and engage w
 
 Richard Tucker <richardt@google.com> has known all of us for many years and will vouch for us.
 Greg Wilson of Software Carpentry has mentored every year for various projects (e.g. Python Software Foundation) and will vouch for us.
-NB has asked Gerv at Bugzilla.org.
+Bugzilla.org (Gerv Markham) will vouch for us.
 
 == If you are a large organization who is vouching for a small organization applying to GSoC for their first time this year, please list their name and why you think they'd be good candidates for GSoC here: ==
 
