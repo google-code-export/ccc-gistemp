@@ -61,4 +61,9 @@ We can't see the code for CRUTEM, but perhaps you, a student at the Met Office o
 ===Menne/Williams Homogenization Algorithm===
 (this is a placeholder for any other climate science related algorithm that is a similar size to GISTEMP: a few thousand lines at most).  There aren't many fully automated temperature record homogenization algorithms that are intended to be deployed on a global network.  This is one of them; it's the algorithm used in the GHCN v3 adjusted dataset, described in "Menne, M.J., and C.N. Williams, Jr., 2009: Homogenization of temperature series via pairwise comparisons. Journal of Climate, 22, 1700-1717, doi: 10.1175/2008JCLI2263.1.".  It's a FORTRAN 77 program <a href="ftp://ftp.ncdc.noaa.gov/pub/data/ushcn/v2/monthly/software/">available from the NCDC FTP server</a> (about 17,000 lines).  Clear rewrite (in Python?).
 
+===Sea-Ice Visualisation / Crowd-Sourcing Website===
+A website which presents satellite images of arctic sea ice, such as the visible-light ones from MODIS, and allows users to visually identify features.  The site collects the data into some useful dataset, and also provides visual feedback to the users.  For instance, the site might show several images from different days.  The user can select a distinctive feature on a floe, and mark it on several separate images.  The website deduces the drift velocity, displays it somehow, and collects the data.  Compare with Galaxy Zoo and Old Weather, for successful crowd-sourced science data sites.
+
+Alternatively, a site which just presents the variety of arctic sea ice data sets in separate layers on a single map - a Google Maps mashup?  Or a Google Earth application of some sort.  There's a lot of information out there.
+
 We are very open to further suggestions, and will update this page over time.
