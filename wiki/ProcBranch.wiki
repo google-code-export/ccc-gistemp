@@ -8,7 +8,7 @@ This document describes the procedure for creating a development branch in the s
 
 Branches are named {{{svn/branches/YYYY-MM-DD/branchshortname}}}, where YYYY-MM-DD is the date that the branch is created in ISO 8601 format (for today, it would be 2011-05-17), and _branchshortname_ is a convenient short name for your branch (for example, "pypy" would be reasonable for PyPy development).
 
-The parent directory of the branch, {{{svn/branches/YYYY-MM-DD}}, has to be created first.  If there are more than one branches being created on the same day then this may be already created.
+The parent directory of the branch, {{{svn/branches/YYYY-MM-DD}}}, has to be created first.  If there are more than one branches being created on the same day then this may be already created.
 
 In order to create the parent directory:
 
