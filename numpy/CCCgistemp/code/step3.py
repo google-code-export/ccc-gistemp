@@ -14,13 +14,16 @@ import eqarea
 import giss_data
 import parameters
 import series
-from giss_data import MISSING, valid, invalid
+from giss_data import MISSING, valid
 
 import math
 # http://docs.python.org/release/2.4.4/lib/module-os.path.html
 import os.path
 import sys
 import itertools
+
+import numpy as np
+import numpy.ma as ma
 
 log = open(os.path.join('log', 'step3.log'), 'w')
 
@@ -77,6 +80,57 @@ def incircle(iterable, arc, lat, lon):
             yield record, weight
 
 
+def incircle2(iterable, arc, lat, lon):
+    """An iterator that filters iterable (the argument) and yields every
+    station with a certain distance of the point of interest given by
+    lat and lon (in degrees).  Each station returned has an associated
+    weight (normalized distance from centre).  A series of (*station*,
+    *weight*) pairs is yielded.
+
+    This is essentially a filter; the stations that are returned are in
+    the same order in which they appear in iterable.
+
+    A station record is returned if the great circle arc between it
+    and the point of interest is less than *arc* radians (using angles
+    makes it independent of sphere size).
+
+    The weight is 1-(d/arc).  where *d* is the
+    chord length on a unit circle (from the point lat,lon to the
+    station).
+    """
+
+    # Warning: lat,lon in degrees; arc in radians!
+
+    cosarc = np.cos(arc)
+    coslat = np.cos(lat * np.pi/180)
+    sinlat = np.sin(lat * np.pi/180)
+    coslon = np.cos(lon * np.pi/180)
+    sinlon = np.sin(lon * np.pi/180)
+
+    for record in iterable:
+        st = record.station
+        s_lat, s_lon = st.lat, st.lon
+        # A possible improvement in speed (which the corresponding
+        # Fortran code does) would be to store the trig values of
+        # the station location in the station object.
+        sinlats = np.sin(s_lat * np.pi/180)
+        coslats = np.cos(s_lat * np.pi/180)
+        sinlons = np.sin(s_lon * np.pi/180)
+        coslons = np.cos(s_lon * np.pi/180)
+
+        # Todo: instead of calculating coslon, sinlon, sinlons and coslons,
+        # could calculate cos(s_lon - lon),
+        # because cosd is (slat1* slat2 + clat1 * clat2*cos(londiff))
+
+        # Cosine of angle subtended by arc between 2 points on a
+        # unit sphere is the vector dot product.
+        cosd = (sinlats * sinlat +
+            coslats * coslat * (coslons * coslon + sinlons * sinlon))
+        if cosd > cosarc:
+            d = np.sqrt(2*(1-cosd)) # chord length on unit sphere
+            weight = 1.0 - (d / arc)
+            yield record, weight
+
 def sort(l, cmp):
     """Sort the list l (in place) according to the comparison function
     cmp.  The comparison function, cmp(x, y), should return something
@@ -119,21 +173,37 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
     # Convert to list because we re-use it for each box (region).
     station_records = list(station_records)
+    #%time station_records = list(records)
+    #CPU times: user 7.53 s, sys: 0.07 s, total: 7.60 s
+    #Wall time: 7.61 s
+
     # Descending sort by number of good records.
     # TODO: Switch to using Python's sort method here, although it
     # will change the results.
     sort(station_records, lambda x,y: y.good_count - x.good_count)
+    #%timeit sort(station_records, lambda x,y: y.good_count - x.good_count)
+    #dribble = sys.stdout
+    #1 loops, best of 3: 21.5 s per loop
 
     # A dribble of progress messages.
     dribble = sys.stdout
 
     # Critical radius as an angle of arc
     arc = radius / earth.radius
-    arcdeg = arc * 180 / math.pi
+    arcdeg = arc * 180 / np.pi
 
     regions = list(eqarea.gridsub())
     for region in regions:
-        box, subboxes = region[0], list(region[1])
+        #%timeit np.fromiter(region[1], dtype=np.float)
+        #1000000 loops, best of 3: 1.06 us per loop
+        box = np.fromiter(region[0], dtype=np.float)
+        try:
+            subboxes = np.fromiter(region[1], dtype=np.float)
+        except ValueError:
+            subboxes = list(region[1])
+        #%timeit list(region[1])
+        #1000000 loops, best of 3: 1.07 us per loop
+        #NOTE:box, subboxes = region[0], list(region[1])
 
         # Count how many cells are empty
         n_empty_cells = 0
@@ -144,7 +214,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
               centre + (n_empty_cells,)))
             dribble.flush()
             # Determine the contributing stations to this grid cell.
-            contributors = list(incircle(station_records, arc, *centre))
+            contributors = list(incircle2(station_records, arc, *centre))
 
             # Combine data.
             subbox_series = [MISSING] * max_months
@@ -164,9 +234,31 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
             offset = record.rel_first_month - 1
             a = record.series # just a temporary
+            subbox_series_l = subbox_series
+            subbox_series = ma.masked_equal(subbox_series, 9999.0)
             subbox_series[offset:offset + len(a)] = a
+            subbox_series_l[offset:offset + len(a)] = a
+
+            #TODO: debug lines removeme
+            #print
+            #print("subbox_series")
+            #print subbox_series.filled(fill_value=9999.0).tolist()==subbox_series_l
+            #raw_input()
+
             max_weight = wt
-            weight = [wt*valid(v) for v in subbox_series]
+            weight = wt * ~subbox_series.mask
+            weight_l = [wt*valid(v) for v in subbox_series_l]
+
+            #TODO: debug lines
+            print
+            print("weight")
+            print weight.tolist()==weight_l
+            raw_input()
+            f = open("weight.txt",'w')
+            for i in xrange(0, len(weight), 4):
+                print >>f, (subbox_series.filled(fill_value=9999.0).tolist()[i],
+                subbox_series_l[i], weight.tolist()[i], weight_l[i], ~subbox_series.mask[i])
+
 
             # For logging, keep a list of stations that contributed.
             # Each item in this list is a triple (in list form, so that
@@ -261,3 +353,11 @@ def step3(records, radius=parameters.gridding_radius, year_begin=1880):
     yield meta
     for box in box_source:
         yield box
+# for record in records: convert each to nump array
+# for box in box_source: convert each from numpy ar
+# series.combine
+# Hansen & Lebedeff 1987
+# series.combine implements the "bias method" that they describe in Step 3 of that paper.
+# there is a current combined series, and the next incoming station is biased by the average
+# offset between the incoming station and the current combined series
+# Note: there are 12 offsets, one for january, one for feb, etc.
