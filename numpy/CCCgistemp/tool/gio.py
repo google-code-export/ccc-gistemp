@@ -29,8 +29,8 @@ import warnings
 # Clear Climate Code
 import extend_path
 import fort
-import code.giss_data
-from code import parameters
+from CCCgistemp.code import giss_data
+from CCCgistemp.code import parameters
 
 
 #: Integer code used to indicate missing data.
@@ -43,7 +43,7 @@ MISSING = 9999
 # to external again will preserve their value.
 def tenths_to_float(t):
     if t == MISSING:
-        return code.giss_data.MISSING
+        return giss_data.MISSING
     return t * 0.1
 
 # TODO: How does this differ from float_to_tenths.
@@ -78,7 +78,7 @@ def internal_to_external(series, scale=0.1):
 
     def toint(f):
         # :todo: Use of abs() probably not needed.
-        if abs(f - code.giss_data.MISSING) < 0.01:
+        if abs(f - giss_data.MISSING) < 0.01:
             return MISSING
         return int(round(f * scale))
 
@@ -272,7 +272,7 @@ class StationReader(object):
         (self.min_month, kq, mavg, monm, monm4, yrbeg, missing_flag,
                 precipitation_flag, self.max_month,
                 title) = struct.unpack(self.bos + '9i80s', rec)
-        self.meta = code.giss_data.StationMetaData(self.min_month, kq, mavg,
+        self.meta = giss_data.StationMetaData(self.min_month, kq, mavg,
                 monm, monm4, yrbeg, missing_flag, precipitation_flag,
                 self.max_month, title)
 
@@ -293,7 +293,7 @@ class StationReader(object):
                     self.min_month, self.max_month) = fields[n:]
             country_code = name[-3:]
             uid = "%3s%09d" % (country_code, ident)
-            station = code.giss_data.Series(uid=uid)
+            station = giss_data.Series(uid=uid)
             # TODO: Rename min_month to first_month.
             # TODO: Handle magic 1880, should use meta info!
 
@@ -315,7 +315,7 @@ class SubboxReader(object):
         (self.mo1, kq, mavg, monm, monm4, yrbeg, missing_flag,
                 precipitation_flag,
                 title) = struct.unpack(self.bos + '8i80s', rec)
-        self.meta = code.giss_data.SubboxMetaData(self.mo1, kq, mavg, monm,
+        self.meta = giss_data.SubboxMetaData(self.mo1, kq, mavg, monm,
                 monm4, yrbeg, missing_flag, precipitation_flag, title)
         assert self.meta.mavg == 6, "Only monthly averages supported"
 
@@ -363,7 +363,7 @@ class SubboxReader(object):
               'stations', 'station_months', 'd'],
               fields[1:8]))
             attr['box'] = fields[1:5]
-            subbox = code.giss_data.Series(series=series,
+            subbox = giss_data.Series(series=series,
               celltype=self.celltype, **attr)
             yield subbox
 
@@ -394,7 +394,7 @@ def StationTsReader(path):
             assert len(lines) == 1
             line = lines[0]
             id12 = line[10:22]
-            record = code.giss_data.Series(uid=id12)
+            record = giss_data.Series(uid=id12)
         else:
             # Lines consists of the temperature series. Year +
             # temperature values, as a set of contiguous years.
@@ -494,7 +494,7 @@ def GHCNV3Reader(path=None, file=None, meta=None, year_min=None, scale=None):
           )
         if meta and meta.get(id):
             key['station'] = meta[id]
-        record = code.giss_data.Series(**key)
+        record = giss_data.Series(**key)
         for line in lines:
             year = int(line[11:15])
             element = line[15:19]
@@ -600,7 +600,7 @@ def GHCNV2Reader(path=None, file=None, meta=None, year_min=None):
         """
 
         if "-9999" == s:
-            return code.giss_data.MISSING
+            return giss_data.MISSING
         else:
             return float(s) * 0.1
 
@@ -616,7 +616,7 @@ def GHCNV2Reader(path=None, file=None, meta=None, year_min=None):
         stid = id[:11]
         if meta and meta.get(stid):
             key['station'] = meta[stid]
-        record = code.giss_data.Series(**key)
+        record = giss_data.Series(**key)
         prev_line = None
         for line in lines:
             if line != prev_line:
@@ -689,7 +689,7 @@ def DecimalReader(path, year_min=-9999):
     for (id, lines) in itertools.groupby(f, id12):
         # lines is a set of lines which all begin with the same 12
         # character id
-        record = code.giss_data.Series(uid=id)
+        record = giss_data.Series(uid=id)
         prev_line = None
         for line in lines:
             if line != prev_line:
@@ -760,12 +760,12 @@ def read_antarctic(path, station_path, discriminator,
             id11 = id12[:11]
             if meta and meta.get(id11):
                 key['station'] = meta[id11]
-            record = code.giss_data.Series(**key)
+            record = giss_data.Series(**key)
             continue
         line = line.strip()
         if line.find('.') >= 0 and line[0] in '12':
             year, data = read_antarc_line(line)
-            if year >= code.giss_data.BASE_YEAR:
+            if year >= giss_data.BASE_YEAR:
                 record.add_year(year, data)
 
     if record is not None:
@@ -792,12 +792,12 @@ def read_australia(path, station_path, discriminator,
             id11 = id12[:11]
             if meta and meta.get(id11):
                 key['station'] = meta[id11]
-            record = code.giss_data.Series(**key)
+            record = giss_data.Series(**key)
             continue
         line = line.strip()
         if line.find('.') >= 0 and line[0] in '12':
             year, data = read_antarc_line(line)
-            if year >= code.giss_data.BASE_YEAR:
+            if year >= giss_data.BASE_YEAR:
                 record.add_year(year, data)
 
     if record is not None:
@@ -862,7 +862,7 @@ def convert_F_to_C(record_stream):
     Celsius."""
 
     def convert_datum(x):
-        if code.giss_data.invalid(x):
+        if giss_data.invalid(x):
             return x
         # degrees F to degrees C
         return (x - 32) * 5 / 9.0
@@ -901,8 +901,8 @@ def read_USHCN(path, meta={}):
 
     prev_element = None
     for id,lines in itertools.groupby(open_or_uncompress(path), id6):
-        record = code.giss_data.Series(uid=id,
-          first_year=code.giss_data.BASE_YEAR)
+        record = giss_data.Series(uid=id,
+          first_year=giss_data.BASE_YEAR)
         lines = list(lines)
         elements = set(line[6] for line in lines)
         assert len(elements) == 1, "Multiple elements for station %s." % id
@@ -924,7 +924,7 @@ def read_USHCN(path, meta={}):
                 flag = line[m*7+17]
                 if ((flag in 'EQ') or              # interpolated data
                     (temp_fahrenheit == -9999)):   # absent data
-                    temp = code.giss_data.MISSING
+                    temp = giss_data.MISSING
                 else:
                     # Convert to (fractional) degrees F
                     temp = temp_fahrenheit / 10.0
@@ -1146,7 +1146,7 @@ def station_metadata(path=None, file=None, format='v2'):
     for line in file:
         d = dict((field, convert(line[a:b]))
                   for field, (a,b,convert) in fields.items())
-        result[d['uid']] = code.giss_data.Station(**d)
+        result[d['uid']] = giss_data.Station(**d)
 
     return result
 
@@ -1178,7 +1178,7 @@ def read_hohenpeissenberg(path):
     We only want data from 1880 to 2002.
     """
 
-    record = code.giss_data.Series(uid='617109620002')
+    record = giss_data.Series(uid='617109620002')
     for line in open(path):
         if line[0] in '12':
             year = int(line[:4])
@@ -1217,7 +1217,7 @@ def read_generic(name):
 
     # Read the data.
     stations = GHCNV2Reader(file=f, meta=meta,
-        year_min=code.giss_data.BASE_YEAR)
+        year_min=giss_data.BASE_YEAR)
 
     # Convert IDs if a .tbl file is present.
     try:
@@ -1260,7 +1260,7 @@ def read_float(s):
     try:
         return float(s)
     except:
-        return code.giss_data.MISSING
+        return giss_data.MISSING
 
 def ushcn_input_file():
     """Find the USHCN input file."""
@@ -1338,19 +1338,19 @@ class Input:
             invfile = ghcn3file.replace('.dat', '.inv')
             return GHCNV3Reader(file=open(ghcn3file),
               meta=augmented_station_metadata(invfile, format='v3'),
-              year_min=code.giss_data.BASE_YEAR)
+              year_min=giss_data.BASE_YEAR)
         if source == 'ghcn':
             return GHCNV2Reader("input/v2.mean",
                 meta=v2meta(),
-                year_min=code.giss_data.BASE_YEAR)
+                year_min=giss_data.BASE_YEAR)
         if source == 'scar':
             return itertools.chain(
                 read_antarctic("input/antarc1.txt", "input/antarc1.list", '8',
-                  meta=v2meta(), year_min=code.giss_data.BASE_YEAR),
+                  meta=v2meta(), year_min=giss_data.BASE_YEAR),
                 read_antarctic("input/antarc3.txt", "input/antarc3.list", '9',
-                  meta=v2meta(), year_min=code.giss_data.BASE_YEAR),
+                  meta=v2meta(), year_min=giss_data.BASE_YEAR),
                 read_australia("input/antarc2.txt", "input/antarc2.list", '7',
-                  meta=v2meta(), year_min=code.giss_data.BASE_YEAR))
+                  meta=v2meta(), year_min=giss_data.BASE_YEAR))
         if source == 'hohenpeissenberg':
             return read_hohenpeissenberg(
               "input/t_hohenpeissenberg_200306.txt_as_received_July17_2003")
@@ -1400,7 +1400,7 @@ step0_output = generic_output_step(0)
 def step1_input():
     return GHCNV2Reader("work/step0.v2",
         meta=v2meta(),
-        year_min=code.giss_data.BASE_YEAR)
+        year_min=giss_data.BASE_YEAR)
 
 step1_output = generic_output_step(1)
 
@@ -1615,7 +1615,7 @@ def add_blank(data, required):
 
     for this_box in data:
         other_series = [MISSING] * len(this_box.series)
-        other_box = code.giss_data.Series(series=other_series,
+        other_box = giss_data.Series(series=other_series,
             box=this_box.box,
             stations=0, station_months=0,
             d=MISSING)
