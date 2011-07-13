@@ -1,0 +1,16 @@
+include readme.txt
+include release-notes.txt
+include bin/ccc-gistemp
+include gui/*
+include gui/resources/*.png
+include gui/resources/*.ico
+include gui/lib/*.py
+include gui/lib/*.py
+include doc/*.txt
+include proc/release.txt
+include CCCgistemp/__init__.py
+include CCCgistemp/code/*.py
+include CCCgistemp/tool/*.py
+include CCCgistemp/tool/ccc-gistemp
+include CCCgistemp/tool/grid.html
+include CCCgistemp/tool/grid.js
