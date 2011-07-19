@@ -201,6 +201,13 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             subboxes = np.fromiter(region[1], dtype=np.float)
         except ValueError:
             subboxes = list(region[1])
+
+        #[11:03] <CCF|DavidJones> ah but wait
+        #[11:03] <CCF|DavidJones> you can go...
+        #[11:03] <CCF|DavidJones> sequence = region[0]
+        #[11:03] <CCF|DavidJones> meta = sequence.next()
+        #[11:03] <filipe> I'll try that
+
         #%timeit list(region[1])
         #1000000 loops, best of 3: 1.07 us per loop
         #NOTE:box, subboxes = region[0], list(region[1])
@@ -209,6 +216,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
         n_empty_cells = 0
         for subbox in subboxes:
             # Select and weight stations
+            #TODO: %timeit this part:
             centre = eqarea.centre(subbox)
             dribble.write("\rsubbox at %+05.1f%+06.1f (%d empty)" % (
               centre + (n_empty_cells,)))
@@ -235,6 +243,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             offset = record.rel_first_month - 1
             a = record.series # just a temporary
             subbox_series_l = subbox_series
+            #invalid(9999.0)
             subbox_series = ma.masked_equal(subbox_series, 9999.0)
             subbox_series[offset:offset + len(a)] = a
             subbox_series_l[offset:offset + len(a)] = a
@@ -253,7 +262,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             print
             print("weight")
             print weight.tolist()==weight_l
-            raw_input()
+            raw_input("Hit enter to continue (pause to check debug file).")
             f = open("weight.txt",'w')
             for i in xrange(0, len(weight), 4):
                 print >>f, (subbox_series.filled(fill_value=9999.0).tolist()[i],
