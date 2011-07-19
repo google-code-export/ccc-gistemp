@@ -80,7 +80,7 @@ def incircle(iterable, arc, lat, lon):
             yield record, weight
 
 
-def incircle2(iterable, arc, lat, lon):
+def incircle_numpy(iterable, arc, lat, lon):
     """An iterator that filters iterable (the argument) and yields every
     station with a certain distance of the point of interest given by
     lat and lon (in degrees).  Each station returned has an associated
@@ -107,6 +107,7 @@ def incircle2(iterable, arc, lat, lon):
     coslon = np.cos(lon * np.pi/180)
     sinlon = np.sin(lon * np.pi/180)
 
+    #np.fromiter()
     for record in iterable:
         st = record.station
         s_lat, s_lon = st.lat, st.lon
@@ -192,40 +193,47 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
     arc = radius / earth.radius
     arcdeg = arc * 180 / np.pi
 
+    # NOTE: 1000 loops, best of 3: 1.09 ms per loop # NumPy
+    # NOTE: 1000 loops, best of 3: 292 us per loop # math
     regions = list(eqarea.gridsub())
     for region in regions:
-        #%timeit np.fromiter(region[1], dtype=np.float)
-        #1000000 loops, best of 3: 1.06 us per loop
-        box = np.fromiter(region[0], dtype=np.float)
-        try:
-            subboxes = np.fromiter(region[1], dtype=np.float)
-        except ValueError:
-            subboxes = list(region[1])
+        # NOTE: 100000 loops, best of 3: 12.3 us per loop
+        #box, subboxes = region[0], np.asanyarray(list(region[1]), dtype=np.float)
 
-        #[11:03] <CCF|DavidJones> ah but wait
-        #[11:03] <CCF|DavidJones> you can go...
-        #[11:03] <CCF|DavidJones> sequence = region[0]
-        #[11:03] <CCF|DavidJones> meta = sequence.next()
-        #[11:03] <filipe> I'll try that
-
-        #%timeit list(region[1])
-        #1000000 loops, best of 3: 1.07 us per loop
-        #NOTE:box, subboxes = region[0], list(region[1])
+        # NOTE: 1000000 loops, best of 3: 1.16 us per loop
+        box, subboxes = region[0], list(region[1])
+        subboxes_array = np.asanyarray(subboxes)
 
         # Count how many cells are empty
         n_empty_cells = 0
         for subbox in subboxes:
             # Select and weight stations
-            #TODO: %timeit this part:
+
+            # NumPy test:
+            # NOTE: 100000 loops, best of 3: 9.9 us per loop
+            # Current:
+            #%timeit centre = eqarea.centre(subbox)
+            # NOTE: 100000 loops, best of 3: 2.07 us per loop
             centre = eqarea.centre(subbox)
+
             dribble.write("\rsubbox at %+05.1f%+06.1f (%d empty)" % (
               centre + (n_empty_cells,)))
             dribble.flush()
+
             # Determine the contributing stations to this grid cell.
-            contributors = list(incircle2(station_records, arc, *centre))
+            #NOTE: 10000 loops, best of 3: 28.4 us per loop
+            #contributors = list(incircle_numpy(station_records, arc, *centre))
+
+            # NOTE: 100000 loops, best of 3: 14.7 us per loop
+            contributors = list(incircle(station_records, arc, *centre))
 
             # Combine data.
+            # NOTE: 100000 loops, best of 3: 7.11 us per loop
             subbox_series = [MISSING] * max_months
+
+            # NOTE: 100000 loops, best of 3: 9.61 us per loop
+            #subbox_series = np.zeros(max_months)+MISSING
+            # NOTE: max_months = 1e3, NumPy will be fater only after 1e4
 
             if not contributors:
                 box_obj = giss_data.Series(series=subbox_series,
@@ -236,38 +244,30 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 continue
 
             # Initialise series and weight arrays with first station.
-            record,wt = contributors[0]
+            record, wt = contributors[0]
             total_good_months = record.good_count
             total_stations = 1
 
             offset = record.rel_first_month - 1
-            a = record.series # just a temporary
-            subbox_series_l = subbox_series
-            #invalid(9999.0)
-            subbox_series = ma.masked_equal(subbox_series, 9999.0)
-            subbox_series[offset:offset + len(a)] = a
-            subbox_series_l[offset:offset + len(a)] = a
 
-            #TODO: debug lines removeme
-            #print
-            #print("subbox_series")
-            #print subbox_series.filled(fill_value=9999.0).tolist()==subbox_series_l
-            #raw_input()
+            a = record.series # just a temporary
+            subbox_series[offset:offset + len(a)] = a
+
+            subbox_series_array = ma.masked_equal(subbox_series, 9999.0)
+
+            # TODO: Debug.
+            assert(subbox_series_array.filled(fill_value=9999.0).tolist()==subbox_series)
 
             max_weight = wt
-            weight = wt * ~subbox_series.mask
-            weight_l = [wt*valid(v) for v in subbox_series_l]
 
-            #TODO: debug lines
-            print
-            print("weight")
-            print weight.tolist()==weight_l
-            raw_input("Hit enter to continue (pause to check debug file).")
-            f = open("weight.txt",'w')
-            for i in xrange(0, len(weight), 4):
-                print >>f, (subbox_series.filled(fill_value=9999.0).tolist()[i],
-                subbox_series_l[i], weight.tolist()[i], weight_l[i], ~subbox_series.mask[i])
+            # NOTE: 100000 loops, best of 3: 14.5 us per loop
+            #weight_array = wt * ~subbox_series_array.mask
 
+            # NOTE: 1000 loops, best of 3: 807 us per loop
+            weight = [wt*valid(v) for v in subbox_series]
+
+            # TODO: Debug.
+            #assert(weight_array.tolist()==weight)
 
             # For logging, keep a list of stations that contributed.
             # Each item in this list is a triple (in list form, so that
