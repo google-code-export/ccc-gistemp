@@ -253,6 +253,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             a = record.series # just a temporary
             subbox_series[offset:offset + len(a)] = a
 
+            # NOTE: Masked array.
             subbox_series_array = ma.masked_equal(subbox_series, 9999.0)
 
             # TODO: Debug.
@@ -261,13 +262,14 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             max_weight = wt
 
             # NOTE: 100000 loops, best of 3: 14.5 us per loop
-            #weight_array = wt * ~subbox_series_array.mask
+            weight_array = wt * ~subbox_series_array.mask
+            #weight = weight.tolist()
 
             # NOTE: 1000 loops, best of 3: 807 us per loop
             weight = [wt*valid(v) for v in subbox_series]
 
             # TODO: Debug.
-            #assert(weight_array.tolist()==weight)
+            assert(weight_array.tolist()==weight)
 
             # For logging, keep a list of stations that contributed.
             # Each item in this list is a triple (in list form, so that
@@ -278,8 +280,15 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             # string that records whether each of the 12 months is used.
             # '0' in position *i* indicates that the month was not used,
             # a '1' indicates that is was used.  January is position 0.
+
+            # NOTE: Masked array.
+            l_array = [(~subbox_series_array[i::12].mask).any() for i in range(12)]
+            # NOTE: List.
             l = [any(valid(v) for v in subbox_series[i::12])
               for i in range(12)]
+
+            assert(l_array==l)
+
             s = ''.join('01'[x] for x in l)
             contributed = [[record.uid,wt,s]]
 
@@ -291,9 +300,24 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 new = [MISSING] * max_months
                 aa, bb = record.rel_first_month, record.rel_last_month
                 new[aa - 1:bb] = record.series
+
+                print("calling series.combine")
                 station_months = series.combine(
                     subbox_series, weight, new, wt,
                     parameters.gridding_min_overlap)
+                new_array = ma.masked_equal(new, 9999.0)
+                print("calling series.combine_array")
+                station_months_array = series.combine_array(
+                    subbox_series_array, weight_array, new_array, wt,
+                    parameters.gridding_min_overlap)
+
+                print
+                print("\nstation_months\n%s "% station_months)
+                print("\nstation_months_array\n%s " %
+                station_months_array)
+                print
+                assert(station_months==station_months_array)
+
                 n_good_months = sum(station_months)
                 total_good_months += n_good_months
                 if n_good_months == 0:
