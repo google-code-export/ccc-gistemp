@@ -9,9 +9,64 @@
 import itertools
 from giss_data import valid, invalid, MISSING
 
+import numpy as np
+import numpy.ma as ma
+
 """
 Shared series-processing code in the GISTEMP algorithm.
 """
+
+def combine_array(composite, weight, new, new_weight, min_overlap):
+    """Run the GISTEMP combining algorithm.  This combines the data
+    in the *new* array into the *composite* array.  *new* has weight
+    *new_weight*; *composite* has weights in the *weight* array.
+
+    *new_weight* can be either a constant or an array of weights for
+     each datum in *new*.
+
+    For each of the 12 months of the year, track is kept of how many
+    new data are combined.  This list of 12 elements is returned.
+
+    Each month of the year is considered separately.  For the set of
+    times where both *composite* and *new* have data the mean difference
+    (a bias) is computed.  If there are fewer than *min_overlap* years
+    in common the data (for that month of the year) are not combined.
+    The bias is subtracted from the *new* record and it is point-wise
+    combined into *composite* according to the weight *new_weight* and
+    the existing weights for *composite*.
+    """
+
+    new_weight = ensure_array(weight, new_weight)
+
+    # A count (of combined data) for each month.
+    data_combined = [0] * 12
+    for m in range(12):
+        sum_new = 0.0    # Sum of data in new
+        sum = 0.0        # Sum of data in composite
+        # Number of years where both new and composite are valid.
+        count = 0
+        for a,n in zip(composite[m::12], new[m::12]):  # TODO: Try reshape.
+            #print("array a: %s, n: %s" % (a, n))
+            if not a or not n: # FIXME: Bug here.
+                continue
+            count += 1
+            sum += a
+            sum_new += n
+            print("count: %s, sum: %s, sum_new: %s, a: %s, b: %s" % (count, sum, sum_new, a, n))
+        if count < min_overlap:
+            continue
+        bias = (sum-sum_new)/count
+
+        # Update period of valid data, composite and weights.
+        for i in range(m, len(new), 12):  # TODO: Try new.count()
+            if not new[i]:
+                continue
+            new_month_weight = weight[i] + new_weight[i]
+            composite[i] = ( weight[i] * composite[i] +
+                             new_weight[i] * ( new[i] + bias ) ) / new_month_weight
+            weight[i] = new_month_weight
+            data_combined[m] += 1
+    return data_combined
 
 
 def combine(composite, weight, new, new_weight, min_overlap):
@@ -45,11 +100,13 @@ def combine(composite, weight, new, new_weight, min_overlap):
         count = 0
         for a,n in itertools.izip(composite[m::12],
                                   new[m::12]):
+            #print("list a: %s, n: %s" % (a, n))
             if invalid(a) or invalid(n):
                 continue
             count += 1
             sum += a
             sum_new += n
+            print("count: %s, sum: %s, sum_new: %s, a: %s, b: %s" % (count, sum, sum_new, a, n))
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
@@ -123,7 +180,7 @@ def monthly_anomalies(data, reference_period=None, base_year=-9999):
     *last) and the mean for a month is taken over the period (an example
     would be reference_period=(1951,1980)).  *base_year* specifies the
     first year of the data.
-    
+
     The input data is a flat sequence, one datum per month.
     Effectively the data changes shape as it passes through this
     function.
@@ -167,7 +224,7 @@ def monthly_annual(data):
     we can drop it later.  A pair (annual_mean, annual_anomalies) is
     returned.
     """
-    
+
     years = len(data) // 12
     monthly_mean, monthly_anom = monthly_anomalies(data)
 
