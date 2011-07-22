@@ -37,6 +37,8 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     """
 
     new_weight = ensure_array(weight, new_weight)
+    comp = composite.filled(fill_value=9999.0).tolist()
+    new_list = new.filled(fill_value=9999.0).tolist()
 
     # A count (of combined data) for each month.
     data_combined = [0] * 12
@@ -45,27 +47,34 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
         sum = 0.0        # Sum of data in composite
         # Number of years where both new and composite are valid.
         count = 0
-        for a,n in zip(composite[m::12], new[m::12]):  # TODO: Try reshape.
-            #print("array a: %s, n: %s" % (a, n))
-            if not a or not n: # FIXME: Bug here.
-                continue
-            count += 1
-            sum += a
-            sum_new += n
-            print("count: %s, sum: %s, sum_new: %s, a: %s, b: %s" % (count, sum, sum_new, a, n))
+        a = composite.reshape(12, composite.size/12, order='F')[m]
+        n = new.reshape(12, new.size/12, order='F')[m]
+
+        new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
+
+        # Apply new mask
+        a.mask[new_mask] = True
+        n.mask[new_mask] = True
+
+        count = a.count()
+        sum = a.sum()
+        sum_new = n.sum()
+
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
 
         # Update period of valid data, composite and weights.
-        for i in range(m, len(new), 12):  # TODO: Try new.count()
-            if not new[i]:
+        for i in range(m, len(new_list), 12):  # TODO: Try new.count()
+            if invalid(new_list[i]):
                 continue
             new_month_weight = weight[i] + new_weight[i]
-            composite[i] = ( weight[i] * composite[i] +
+            comp[i] = ( weight[i] * comp[i] +
                              new_weight[i] * ( new[i] + bias ) ) / new_month_weight
             weight[i] = new_month_weight
             data_combined[m] += 1
+        print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
+        print("\ncomposite: %s" % comp)
     return data_combined
 
 
@@ -100,13 +109,13 @@ def combine(composite, weight, new, new_weight, min_overlap):
         count = 0
         for a,n in itertools.izip(composite[m::12],
                                   new[m::12]):
-            #print("list a: %s, n: %s" % (a, n))
             if invalid(a) or invalid(n):
                 continue
             count += 1
             sum += a
             sum_new += n
-            print("count: %s, sum: %s, sum_new: %s, a: %s, b: %s" % (count, sum, sum_new, a, n))
+            #print("count: %s, sum: %s, sum_new: %s, a: %s, b: %s" % (count, sum, sum_new, a, n))
+
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
@@ -120,6 +129,8 @@ def combine(composite, weight, new, new_weight, min_overlap):
                           + new_weight[i]*(new[i]+bias))/new_month_weight
             weight[i] = new_month_weight
             data_combined[m] += 1
+        print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
+        print("\ncomposite: %s" % composite)
     return data_combined
 
 def ensure_array(exemplar, item):
