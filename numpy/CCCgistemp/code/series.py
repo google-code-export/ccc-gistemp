@@ -37,8 +37,8 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     """
 
     new_weight = ensure_array(weight, new_weight)
-    comp = composite.filled(fill_value=9999.0).tolist()
-    new_list = new.filled(fill_value=9999.0).tolist()
+
+    c_array = open('comb_array.txt','w')
 
     # A count (of combined data) for each month.
     data_combined = [0] * 12
@@ -65,16 +65,17 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
         bias = (sum-sum_new)/count
 
         # Update period of valid data, composite and weights.
-        for i in range(m, len(new_list), 12):  # TODO: Try new.count()
-            if invalid(new_list[i]):
+        for i in range(m, len(new), 12):  # TODO: Try new.count()
+            if not new[i]:
                 continue
             new_month_weight = weight[i] + new_weight[i]
-            comp[i] = ( weight[i] * comp[i] +
-                             new_weight[i] * ( new[i] + bias ) ) / new_month_weight
+            composite[i] = (weight[i]*composite[i] +
+                            new_weight[i]*(new[i]+bias))/new_month_weight
             weight[i] = new_month_weight
             data_combined[m] += 1
-        print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
-        print("\ncomposite: %s" % comp)
+        #print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
+        print >> c_array,("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
+        #print("\ncomposite: %s" % comp)
     return data_combined
 
 
@@ -99,6 +100,8 @@ def combine(composite, weight, new, new_weight, min_overlap):
     """
 
     new_weight = ensure_array(weight, new_weight)
+
+    c_list = open('comb_list.txt','w')
 
     # A count (of combined data) for each month.
     data_combined = [0] * 12
@@ -129,8 +132,9 @@ def combine(composite, weight, new, new_weight, min_overlap):
                           + new_weight[i]*(new[i]+bias))/new_month_weight
             weight[i] = new_month_weight
             data_combined[m] += 1
-        print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
-        print("\ncomposite: %s" % composite)
+        #print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
+        print >> c_list,("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
+        #print("\ncomposite: %s" % composite)
     return data_combined
 
 def ensure_array(exemplar, item):
