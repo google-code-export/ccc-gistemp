@@ -159,7 +159,6 @@ def sort(l, cmp):
         l[n] = t
     return
 
-
 def iter_subbox_grid(station_records, max_months, first_year, radius):
     """Convert the input *station_records*, into a gridded anomaly
     dataset which is returned as an iterator.
@@ -196,6 +195,10 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
     # NOTE: 1000 loops, best of 3: 1.09 ms per loop # NumPy
     # NOTE: 1000 loops, best of 3: 292 us per loop # math
     regions = list(eqarea.gridsub())
+
+    f_list = open('list.txt','w')
+    f_array = open('array.txt','w')
+
     for region in regions:
         # NOTE: 100000 loops, best of 3: 12.3 us per loop
         #box, subboxes = region[0], np.asanyarray(list(region[1]), dtype=np.float)
@@ -301,22 +304,19 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 aa, bb = record.rel_first_month, record.rel_last_month
                 new[aa - 1:bb] = record.series
 
-                print("calling series.combine")
+                #print("calling series.combine")
                 station_months = series.combine(
                     subbox_series, weight, new, wt,
                     parameters.gridding_min_overlap)
                 new_array = ma.masked_equal(new, 9999.0)
-                print("calling series.combine_array")
+                #print("calling series.combine_array")
                 station_months_array = series.combine_array(
                     subbox_series_array, weight_array, new_array, wt,
                     parameters.gridding_min_overlap)
 
-                print
-                print("\nstation_months\n%s "% station_months)
-                print("\nstation_months_array\n%s " %
-                station_months_array)
-                print
-                assert(station_months==station_months_array)
+                print >>f_list,("%s\n"% station_months)
+                print >>f_array,("%s\n" % station_months_array)
+                #assert(station_months==station_months_array)
 
                 n_good_months = sum(station_months)
                 total_good_months += n_good_months
