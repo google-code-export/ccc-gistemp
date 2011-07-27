@@ -41,28 +41,29 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     # A count (of combined data) for each month.
     data_combined = [0] * 12
 
-    #a = composite.reshape(12, composite.size/12, order='F')
-    #n = new.reshape(12, new.size/12, order='F')
+    aa = composite.reshape(12, composite.size/12, order='F').copy()
+    nn = new.reshape(12, new.size/12, order='F').copy()
 
     for m in range(12):
         sum_new = 0.0  # Sum of data in new
         sum = 0.0  # Sum of data in composite
         count = 0  # Number of years where both new and composite are valid.
 
-        for a,n in zip(composite[m::12], new[m::12]):
-            if ma.isMaskedArray(a) or ma.isMaskedArray(n):
-                continue
-            count += 1
-            sum += a
-            sum_new += n
-        #FIXME: Here is the problem!
-        #a = aa[m]; n = nn[m]; new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
+        #for a,n in zip(composite[m::12], new[m::12]):
+            #if ma.isMaskedArray(a) or ma.isMaskedArray(n):
+                #continue
+            #count += 1
+            #sum += a
+            #sum_new += n
+        a = aa[m]
+        n = nn[m]
+        new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
         # Apply new mask
-        #a.mask[new_mask] = True
-        #n.mask[new_mask] = True
-        #count = a.count()
-        #sum = a.sum()
-        #sum_new = n.sum()
+        a.mask[new_mask] = True
+        n.mask[new_mask] = True
+        count = a.count()
+        sum = a.sum()
+        sum_new = n.sum()
 
         if count < min_overlap:
             continue
@@ -70,15 +71,13 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
 
         #NOTE: So far OK
         #print >>f,("\nm: %s, count: %s, sum: %s, sum_new: %s, bias: %s" % (m, count, sum, sum_new, bias))
-
-        #print >>f_array,("\nm: %s" % m)
-        #print >>f_array,("\ncomposite: %s" % composite.filled(fill_value=9999.0).tolist())
+        #print >>f,("\ncomposite: %s" % composite.filled(fill_value=9999.0).tolist())
 
         # Update period of valid data, composite and weights.
         #print >>f_array,("m: %s, len(new): %s\n" % (m, len(new)))
         for i in range(m, len(new), 12):  # TODO: Try new.count()
-            #if new.mask[i]:
-            if ma.isMaskedArray(new[i]):
+            if new.mask[i]:
+            #if ma.isMaskedArray(new[i]):
                 continue
             new_month_weight = weight[i] + new_weight[i]
 
@@ -150,9 +149,7 @@ def combine(composite, weight, new, new_weight, min_overlap):
 
         #NOTE: So far OK
         #print >>f,("\nm: %s, count: %s, sum: %s, sum_new: %s, bias: %s" % (m, count, sum, sum_new, bias))
-
-        #print >>f_list,("\nm: %s" % m)
-        #print >>f_list,("\ncomposite: %s" % composite)
+        #print >>f,("\ncomposite: %s" % composite)
 
         # Update period of valid data, composite and weights.
         #print >>f_list,("m: %s, len(new): %s\n" % (m, len(new)))
