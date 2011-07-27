@@ -38,44 +38,71 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
 
     new_weight = ensure_array(weight, new_weight)
 
-    c_array = open('comb_array.txt','w')
-
     # A count (of combined data) for each month.
     data_combined = [0] * 12
+
+    #a = composite.reshape(12, composite.size/12, order='F')
+    #n = new.reshape(12, new.size/12, order='F')
+
     for m in range(12):
-        sum_new = 0.0    # Sum of data in new
-        sum = 0.0        # Sum of data in composite
-        # Number of years where both new and composite are valid.
-        count = 0
-        a = composite.reshape(12, composite.size/12, order='F')[m]
-        n = new.reshape(12, new.size/12, order='F')[m]
+        sum_new = 0.0  # Sum of data in new
+        sum = 0.0  # Sum of data in composite
+        count = 0  # Number of years where both new and composite are valid.
 
-        new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
-
+        for a,n in zip(composite[m::12], new[m::12]):
+            if ma.isMaskedArray(a) or ma.isMaskedArray(n):
+                continue
+            count += 1
+            sum += a
+            sum_new += n
+        #FIXME: Here is the problem!
+        #a = aa[m]; n = nn[m]; new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
         # Apply new mask
-        a.mask[new_mask] = True
-        n.mask[new_mask] = True
-
-        count = a.count()
-        sum = a.sum()
-        sum_new = n.sum()
+        #a.mask[new_mask] = True
+        #n.mask[new_mask] = True
+        #count = a.count()
+        #sum = a.sum()
+        #sum_new = n.sum()
 
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
 
+        #NOTE: So far OK
+        #print >>f,("\nm: %s, count: %s, sum: %s, sum_new: %s, bias: %s" % (m, count, sum, sum_new, bias))
+
+        #print >>f_array,("\nm: %s" % m)
+        #print >>f_array,("\ncomposite: %s" % composite.filled(fill_value=9999.0).tolist())
+
         # Update period of valid data, composite and weights.
+        #print >>f_array,("m: %s, len(new): %s\n" % (m, len(new)))
         for i in range(m, len(new), 12):  # TODO: Try new.count()
-            if not new[i]:
+            #if new.mask[i]:
+            if ma.isMaskedArray(new[i]):
                 continue
             new_month_weight = weight[i] + new_weight[i]
-            composite[i] = (weight[i]*composite[i] +
-                            new_weight[i]*(new[i]+bias))/new_month_weight
+
+            # NOTE: Debug. (Passed)
+            #print >>f,("\nm: %s, i: %s, weight[i]: %s, new_weight[i]: %s, new_month_weight: %s, composite[i]: %s" % (m, i, weight[i], new_weight[i], new_month_weight, composite[i]))
+
+            # FIXME: weight[i] * composite[i] 0.0 !!!
+            if ma.isMaskedArray(composite[i]):
+                composite[i] = composite[i].filled(fill_value=9999.0)
+            composite[i] = (weight[i] * composite[i] + new_weight[i] * (new[i] + bias)) / new_month_weight
+
+            #print >>f,("\ncomposite[i]: %s, new[i]: %s" % (composite[i], new[i]))
+
+
+            #print >>f_array,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
+
             weight[i] = new_month_weight
+
+            #print >>f_array,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
+
             data_combined[m] += 1
-        #print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
-        print >> c_array,("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
-        #print("\ncomposite: %s" % comp)
+
+            #print >>f_array,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
+
     return data_combined
 
 
@@ -101,15 +128,14 @@ def combine(composite, weight, new, new_weight, min_overlap):
 
     new_weight = ensure_array(weight, new_weight)
 
-    c_list = open('comb_list.txt','w')
-
     # A count (of combined data) for each month.
     data_combined = [0] * 12
+
     for m in range(12):
-        sum_new = 0.0    # Sum of data in new
-        sum = 0.0        # Sum of data in composite
-        # Number of years where both new and composite are valid.
-        count = 0
+        sum_new = 0.0  # Sum of data in new
+        sum = 0.0  # Sum of data in composite
+        count = 0  # Number of years where both new and composite are valid.
+
         for a,n in itertools.izip(composite[m::12],
                                   new[m::12]):
             if invalid(a) or invalid(n):
@@ -117,24 +143,41 @@ def combine(composite, weight, new, new_weight, min_overlap):
             count += 1
             sum += a
             sum_new += n
-            #print("count: %s, sum: %s, sum_new: %s, a: %s, b: %s" % (count, sum, sum_new, a, n))
 
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
 
+        #NOTE: So far OK
+        #print >>f,("\nm: %s, count: %s, sum: %s, sum_new: %s, bias: %s" % (m, count, sum, sum_new, bias))
+
+        #print >>f_list,("\nm: %s" % m)
+        #print >>f_list,("\ncomposite: %s" % composite)
+
         # Update period of valid data, composite and weights.
+        #print >>f_list,("m: %s, len(new): %s\n" % (m, len(new)))
         for i in range(m, len(new), 12):
             if invalid(new[i]):
                 continue
             new_month_weight = weight[i] + new_weight[i]
-            composite[i] = (weight[i]*composite[i]
-                          + new_weight[i]*(new[i]+bias))/new_month_weight
+
+            # NOTE: Debug. (Passed)
+            #print >>f,("\nm: %s, i: %s, weight[i]: %s, new_weight[i]: %s, new_month_weight: %s, composite[i]: %s" % (m, i, weight[i], new_weight[i], new_month_weight, composite[i]))
+
+            composite[i] = (weight[i]*composite[i] + new_weight[i]*(new[i]+bias))/new_month_weight
+
+            #print >>f,("\ncomposite[i]: %s, new[i]: %s" % (composite[i], new[i]))
+
+            #print >>f_list,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
+
             weight[i] = new_month_weight
+
+            #print >>f_list,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
+
             data_combined[m] += 1
-        #print("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
-        print >> c_list,("count: %s, sum: %s, sum_new: %s, bias: %s, new_month_weight: %s, data_combined: %s" % (count, sum, sum_new, bias, new_month_weight, data_combined))
-        #print("\ncomposite: %s" % composite)
+
+            #print >>f_list,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
+
     return data_combined
 
 def ensure_array(exemplar, item):

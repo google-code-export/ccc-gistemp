@@ -196,9 +196,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
     # NOTE: 1000 loops, best of 3: 292 us per loop # math
     regions = list(eqarea.gridsub())
 
-    f_list = open('list.txt','w')
-    f_array = open('array.txt','w')
-
+    #n = 0
     for region in regions:
         # NOTE: 100000 loops, best of 3: 12.3 us per loop
         #box, subboxes = region[0], np.asanyarray(list(region[1]), dtype=np.float)
@@ -297,6 +295,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
             # Add in the remaining stations
             for record,wt in contributors[1:]:
+                #n +=1
                 # TODO: A method to produce a padded data series
                 #       would be good here. Hence we could just do:
                 #           new = record.padded_series(max_months)
@@ -304,19 +303,20 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 aa, bb = record.rel_first_month, record.rel_last_month
                 new[aa - 1:bb] = record.series
 
-                #print("calling series.combine")
+                new_array = ma.masked_equal(new, 9999.0)
+                assert(new_array.filled(fill_value=9999.0).tolist()==new)
+
+                #f=open('station_months_'+str(n)+'.debug','w')
                 station_months = series.combine(
                     subbox_series, weight, new, wt,
                     parameters.gridding_min_overlap)
-                new_array = ma.masked_equal(new, 9999.0)
-                #print("calling series.combine_array")
+
+                #f=open('station_months_array_'+str(n)+'.debug','w')
                 station_months_array = series.combine_array(
                     subbox_series_array, weight_array, new_array, wt,
                     parameters.gridding_min_overlap)
 
-                print >>f_list,("%s\n"% station_months)
-                print >>f_array,("%s\n" % station_months_array)
-                #assert(station_months==station_months_array)
+                assert(station_months_array==station_months)
 
                 n_good_months = sum(station_months)
                 total_good_months += n_good_months
