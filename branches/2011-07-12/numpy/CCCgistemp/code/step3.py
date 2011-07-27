@@ -25,6 +25,8 @@ import itertools
 import numpy as np
 import numpy.ma as ma
 
+NumPy = False
+
 log = open(os.path.join('log', 'step3.log'), 'w')
 
 
@@ -107,7 +109,6 @@ def incircle_numpy(iterable, arc, lat, lon):
     coslon = np.cos(lon * np.pi/180)
     sinlon = np.sin(lon * np.pi/180)
 
-    #np.fromiter()
     for record in iterable:
         st = record.station
         s_lat, s_lon = st.lat, st.lon
@@ -173,9 +174,10 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
     # Convert to list because we re-use it for each box (region).
     station_records = list(station_records)
-    #%time station_records = list(records)
-    #CPU times: user 7.53 s, sys: 0.07 s, total: 7.60 s
-    #Wall time: 7.61 s
+    #NOTE:
+    # %time station_records = list(records)
+    # CPU times: user 7.53 s, sys: 0.07 s, total: 7.60 s
+    # Wall time: 7.61 s
 
     # Descending sort by number of good records.
     # TODO: Switch to using Python's sort method here, although it
@@ -192,29 +194,27 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
     arc = radius / earth.radius
     arcdeg = arc * 180 / np.pi
 
-    # NOTE: 1000 loops, best of 3: 1.09 ms per loop # NumPy
-    # NOTE: 1000 loops, best of 3: 292 us per loop # math
+    # NOTE: 1000 loops, best of 3: 1.09 ms per loop [numpy]
+    # NOTE: 1000 loops, best of 3: 292 us per loop [math]
     regions = list(eqarea.gridsub())
 
-    #n = 0
     for region in regions:
         # NOTE: 100000 loops, best of 3: 12.3 us per loop
         #box, subboxes = region[0], np.asanyarray(list(region[1]), dtype=np.float)
 
         # NOTE: 1000000 loops, best of 3: 1.16 us per loop
         box, subboxes = region[0], list(region[1])
-        subboxes_array = np.asanyarray(subboxes)
+
+        if NumPy: # switch to test numpy alternative
+            subboxes = np.asanyarray(subboxes)
 
         # Count how many cells are empty
         n_empty_cells = 0
         for subbox in subboxes:
             # Select and weight stations
 
-            # NumPy test:
-            # NOTE: 100000 loops, best of 3: 9.9 us per loop
-            # Current:
-            #%timeit centre = eqarea.centre(subbox)
-            # NOTE: 100000 loops, best of 3: 2.07 us per loop
+            # NOTE: 100000 loops, best of 3: 9.9 us per loop [numpy]
+            # NOTE: 100000 loops, best of 3: 2.07 us per loop [math]
             centre = eqarea.centre(subbox)
 
             dribble.write("\rsubbox at %+05.1f%+06.1f (%d empty)" % (
@@ -255,22 +255,23 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             subbox_series[offset:offset + len(a)] = a
 
             # NOTE: Masked array.
-            subbox_series_array = ma.masked_equal(subbox_series, 9999.0)
+            if NumPy:
+                subbox_series = ma.masked_equal(subbox_series, 9999.0)
 
             # TODO: Debug.
-            assert(subbox_series_array.filled(fill_value=9999.0).tolist()==subbox_series)
+            #assert(subbox_series_array.filled(fill_value=9999.0).tolist()==subbox_series)
 
             max_weight = wt
 
-            # NOTE: 100000 loops, best of 3: 14.5 us per loop
-            weight_array = wt * ~subbox_series_array.mask
-            #weight = weight.tolist()
-
-            # NOTE: 1000 loops, best of 3: 807 us per loop
-            weight = [wt*valid(v) for v in subbox_series]
+            if NumPy:
+                # NOTE: 100000 loops, best of 3: 14.5 us per loop
+                weight = wt * ~subbox_series_array.mask
+            else:
+                # NOTE: 1000 loops, best of 3: 807 us per loop
+                weight = [wt*valid(v) for v in subbox_series]
 
             # TODO: Debug.
-            assert(weight_array.tolist()==weight)
+            #assert(weight_array.tolist()==weight)
 
             # For logging, keep a list of stations that contributed.
             # Each item in this list is a triple (in list form, so that
@@ -282,20 +283,20 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             # '0' in position *i* indicates that the month was not used,
             # a '1' indicates that is was used.  January is position 0.
 
-            # NOTE: Masked array.
-            l_array = [(~subbox_series_array[i::12].mask).any() for i in range(12)]
-            # NOTE: List.
-            l = [any(valid(v) for v in subbox_series[i::12])
-              for i in range(12)]
+            if NumPy:
+                # NOTE: Masked array.
+                l = [(~subbox_series_array[i::12].mask).any() for i in range(12)]
+            else:
+                # NOTE: List.
+                l = [any(valid(v) for v in subbox_series[i::12]) for i in range(12)]
 
-            assert(l_array==l)
+            #assert(l_array==l)
 
             s = ''.join('01'[x] for x in l)
             contributed = [[record.uid,wt,s]]
 
             # Add in the remaining stations
             for record,wt in contributors[1:]:
-                #n +=1
                 # TODO: A method to produce a padded data series
                 #       would be good here. Hence we could just do:
                 #           new = record.padded_series(max_months)
@@ -303,20 +304,20 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 aa, bb = record.rel_first_month, record.rel_last_month
                 new[aa - 1:bb] = record.series
 
-                new_array = ma.masked_equal(new, 9999.0)
-                assert(new_array.filled(fill_value=9999.0).tolist()==new)
+                if NumPy:
+                    new = ma.masked_equal(new, 9999.0)
+                #assert(new_array.filled(fill_value=9999.0).tolist()==new)
 
-                #f=open('station_months_'+str(n)+'.debug','w')
-                station_months = series.combine(
-                    subbox_series, weight, new, wt,
-                    parameters.gridding_min_overlap)
+                if NumPy:
+                    station_months_array = series.combine_array(
+                                           subbox_series, weight, new, wt,
+                                           parameters.gridding_min_overlap)
+                else:
+                    station_months = series.combine(
+                                     subbox_series, weight, new, wt,
+                                     parameters.gridding_min_overlap)
 
-                #f=open('station_months_array_'+str(n)+'.debug','w')
-                station_months_array = series.combine_array(
-                    subbox_series_array, weight_array, new_array, wt,
-                    parameters.gridding_min_overlap)
-
-                assert(station_months_array==station_months)
+                #assert(station_months_array==station_months)
 
                 n_good_months = sum(station_months)
                 total_good_months += n_good_months
@@ -386,11 +387,3 @@ def step3(records, radius=parameters.gridding_radius, year_begin=1880):
     yield meta
     for box in box_source:
         yield box
-# for record in records: convert each to nump array
-# for box in box_source: convert each from numpy ar
-# series.combine
-# Hansen & Lebedeff 1987
-# series.combine implements the "bias method" that they describe in Step 3 of that paper.
-# there is a current combined series, and the next incoming station is biased by the average
-# offset between the incoming station and the current combined series
-# Note: there are 12 offsets, one for january, one for feb, etc.
