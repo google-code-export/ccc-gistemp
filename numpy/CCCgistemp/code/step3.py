@@ -27,6 +27,11 @@ import numpy.ma as ma
 
 NumPy = False
 
+if NumPy:
+    print("NumPy")
+else:
+    print("non-NumPy")
+
 log = open(os.path.join('log', 'step3.log'), 'w')
 
 
@@ -81,57 +86,6 @@ def incircle(iterable, arc, lat, lon):
             weight = 1.0 - (d / arc)
             yield record, weight
 
-
-def incircle_numpy(iterable, arc, lat, lon):
-    """An iterator that filters iterable (the argument) and yields every
-    station with a certain distance of the point of interest given by
-    lat and lon (in degrees).  Each station returned has an associated
-    weight (normalized distance from centre).  A series of (*station*,
-    *weight*) pairs is yielded.
-
-    This is essentially a filter; the stations that are returned are in
-    the same order in which they appear in iterable.
-
-    A station record is returned if the great circle arc between it
-    and the point of interest is less than *arc* radians (using angles
-    makes it independent of sphere size).
-
-    The weight is 1-(d/arc).  where *d* is the
-    chord length on a unit circle (from the point lat,lon to the
-    station).
-    """
-
-    # Warning: lat,lon in degrees; arc in radians!
-
-    cosarc = np.cos(arc)
-    coslat = np.cos(lat * np.pi/180)
-    sinlat = np.sin(lat * np.pi/180)
-    coslon = np.cos(lon * np.pi/180)
-    sinlon = np.sin(lon * np.pi/180)
-
-    for record in iterable:
-        st = record.station
-        s_lat, s_lon = st.lat, st.lon
-        # A possible improvement in speed (which the corresponding
-        # Fortran code does) would be to store the trig values of
-        # the station location in the station object.
-        sinlats = np.sin(s_lat * np.pi/180)
-        coslats = np.cos(s_lat * np.pi/180)
-        sinlons = np.sin(s_lon * np.pi/180)
-        coslons = np.cos(s_lon * np.pi/180)
-
-        # Todo: instead of calculating coslon, sinlon, sinlons and coslons,
-        # could calculate cos(s_lon - lon),
-        # because cosd is (slat1* slat2 + clat1 * clat2*cos(londiff))
-
-        # Cosine of angle subtended by arc between 2 points on a
-        # unit sphere is the vector dot product.
-        cosd = (sinlats * sinlat +
-            coslats * coslat * (coslons * coslon + sinlons * sinlon))
-        if cosd > cosarc:
-            d = np.sqrt(2*(1-cosd)) # chord length on unit sphere
-            weight = 1.0 - (d / arc)
-            yield record, weight
 
 def sort(l, cmp):
     """Sort the list l (in place) according to the comparison function
@@ -192,7 +146,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
     # Critical radius as an angle of arc
     arc = radius / earth.radius
-    arcdeg = arc * 180 / np.pi
+    arcdeg = arc * 180 / math.pi
 
     # NOTE: 1000 loops, best of 3: 1.09 ms per loop [numpy]
     # NOTE: 1000 loops, best of 3: 292 us per loop [math]
@@ -265,7 +219,7 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
             if NumPy:
                 # NOTE: 100000 loops, best of 3: 14.5 us per loop
-                weight = wt * ~subbox_series_array.mask
+                weight = wt * ~subbox_series.mask
             else:
                 # NOTE: 1000 loops, best of 3: 807 us per loop
                 weight = [wt*valid(v) for v in subbox_series]
@@ -284,10 +238,8 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             # a '1' indicates that is was used.  January is position 0.
 
             if NumPy:
-                # NOTE: Masked array.
-                l = [(~subbox_series_array[i::12].mask).any() for i in range(12)]
+                l = [(~subbox_series[i::12].mask).any() for i in range(12)]
             else:
-                # NOTE: List.
                 l = [any(valid(v) for v in subbox_series[i::12]) for i in range(12)]
 
             #assert(l_array==l)
@@ -306,18 +258,27 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
                 if NumPy:
                     new = ma.masked_equal(new, 9999.0)
-                #assert(new_array.filled(fill_value=9999.0).tolist()==new)
+                    #assert(new_array.filled(fill_value=9999.0).tolist()==new)
 
                 if NumPy:
-                    station_months_array = series.combine_array(
+                    station_months = series.combine_array(
                                            subbox_series, weight, new, wt,
                                            parameters.gridding_min_overlap)
                 else:
-                    station_months = series.combine(
-                                     subbox_series, weight, new, wt,
-                                     parameters.gridding_min_overlap)
+                    if 0:  # List
+                        station_months = series.combine(
+                                         subbox_series, weight, new, wt,
+                                         parameters.gridding_min_overlap)
+                    if 1:
+                        station_months = series.combine_array(
+                                         subbox_series, weight, new, wt,
+                                         parameters.gridding_min_overlap)
+                    #if 1:  # Bottleneck
+                        #station_months_bn = series.combine_bn(
+                                         #subbox_series, weight, new, wt,
+                                         #parameters.gridding_min_overlap)
 
-                #assert(station_months_array==station_months)
+                #assert(station_months_arr==station_months)
 
                 n_good_months = sum(station_months)
                 total_good_months += n_good_months
@@ -329,6 +290,9 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 contributed.append([record.uid,wt,s])
 
                 max_weight = max(max_weight, wt)
+
+            if NumPy:
+                subbox_series = subbox_series.filled(fill_value=9999.0).tolist()
 
             series.anomalize(subbox_series,
                              parameters.gridding_reference_period, first_year)
