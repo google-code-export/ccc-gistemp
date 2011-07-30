@@ -11,10 +11,89 @@ from giss_data import valid, invalid, MISSING
 
 import numpy as np
 import numpy.ma as ma
+import bottleneck as bn
 
 """
 Shared series-processing code in the GISTEMP algorithm.
 """
+
+def combine_bn(composite, weight, new, new_weight, min_overlap):
+    """Run the GISTEMP combining algorithm.  This combines the data
+    in the *new* array into the *composite* array.  *new* has weight
+    *new_weight*; *composite* has weights in the *weight* array.
+
+    *new_weight* can be either a constant or an array of weights for
+     each datum in *new*.
+
+    For each of the 12 months of the year, track is kept of how many
+    new data are combined.  This list of 12 elements is returned.
+
+    Each month of the year is considered separately.  For the set of
+    times where both *composite* and *new* have data the mean difference
+    (a bias) is computed.  If there are fewer than *min_overlap* years
+    in common the data (for that month of the year) are not combined.
+    The bias is subtracted from the *new* record and it is point-wise
+    combined into *composite* according to the weight *new_weight* and
+    the existing weights for *composite*.
+    """
+
+    new_weight = ensure_array(weight, new_weight)
+
+    # A count (of combined data) for each month.
+    data_combined = [0] * 12
+
+    composite, weight, new, new_weight = map(np.asanyarray,
+                                       (composite, weight, new, new_weight))
+    aa = composite.reshape(12, composite.size/12, order='F').copy()
+    nn = new.reshape(12, new.size/12, order='F').copy()
+
+    aa[aa == 9999.0] = np.nan
+    nn[nn == 9999.0] = np.nan
+
+    for m in range(12):
+        sum_new = 0.0  # Sum of data in new
+        sum = 0.0  # Sum of data in composite
+        count = 0  # Number of years where both new and composite are valid.
+
+        if 1:  # NOTE: No loop, using bottleneck
+            a, n = aa[m],  nn[m]
+            new_mask = np.where(np.isnan(a) != np.isnan(a))[0]  # Get NOT common masked elements.
+            # Apply new mask
+            a[new_mask] = np.nan
+            n[new_mask] = np.nan
+
+            count = np.sum(~np.isnan(a))
+            sum = bn.nansum(a)
+            sum_new = bn.nansum(n)
+
+        if 0: # NOTE: loop, using np.isnan (Extremely inefficient: Run took 8624.0 seconds)
+            for a, n in zip(composite_arr[m::12], new_arr[m::12]):
+                if np.isnan(a) or np.isnan(n):
+                    continue
+                count += 1
+                sum += a
+                sum_new += n
+
+        if count < min_overlap:
+            continue
+        bias = (sum-sum_new)/count
+
+        # Update period of valid data, composite and weights.
+        for i in range(m, len(new), 12):  # TODO: Try new.count()
+            if 1: # NOTE: Bottleneck
+                if np.isnan(new_arr[i]):
+                    continue
+
+            new_month_weight = weight[i] + new_weight[i]
+
+            if np.isnan(composite[i]):
+                composite[i] = 9999.0
+            composite[i] = (weight[i] * composite[i] + new_weight[i] * (new[i] + bias)) / new_month_weight
+
+            weight[i] = new_month_weight
+            data_combined[m] += 1
+
+    return data_combined
 
 def combine_array(composite, weight, new, new_weight, min_overlap):
     """Run the GISTEMP combining algorithm.  This combines the data
@@ -41,66 +120,53 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     # A count (of combined data) for each month.
     data_combined = [0] * 12
 
-    aa = composite.reshape(12, composite.size/12, order='F').copy()
-    nn = new.reshape(12, new.size/12, order='F').copy()
+    composite, weight, new, new_weight = map(np.asanyarray,
+                                       (composite, weight, new, new_weight))
+    composite = ma.masked_equal(composite, 9999.0)
+    new = ma.masked_equal(new, 9999.0)
+    #aa = composite.reshape(12, composite.size/12, order='F').copy()
+    #nn = new.reshape(12, new.size/12, order='F').copy()
 
     for m in range(12):
-        sum_new = 0.0  # Sum of data in new
-        sum = 0.0  # Sum of data in composite
-        count = 0  # Number of years where both new and composite are valid.
+        # NOTE: Same loop, using masked_arrays
+        if 1:
+            sum_new = 0.0  # Sum of data in new
+            sum = 0.0  # Sum of data in composite
+            count = 0  # Number of years where both new and composite are valid.
+            for a,n in zip(composite[m::12], new[m::12]):
+                if ma.isMaskedArray(a) or ma.isMaskedArray(n):
+                    continue
+                count += 1
+                sum += a
+                sum_new += n
 
-        #for a,n in zip(composite[m::12], new[m::12]):
-            #if ma.isMaskedArray(a) or ma.isMaskedArray(n):
-                #continue
-            #count += 1
-            #sum += a
-            #sum_new += n
-        a = aa[m]
-        n = nn[m]
-        new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
-        # Apply new mask
-        a.mask[new_mask] = True
-        n.mask[new_mask] = True
-        count = a.count()
-        sum = a.sum()
-        sum_new = n.sum()
+        # No loop, using masked_arrays
+        if 0:
+            a, n = aa[m],  nn[m]
+            new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
+            # Apply new mask
+            a.mask[new_mask] = True
+            n.mask[new_mask] = True
+            count = a.count()
+            sum = a.sum()
+            sum_new = n.sum()
 
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
 
-        #NOTE: So far OK
-        #print >>f,("\nm: %s, count: %s, sum: %s, sum_new: %s, bias: %s" % (m, count, sum, sum_new, bias))
-        #print >>f,("\ncomposite: %s" % composite.filled(fill_value=9999.0).tolist())
-
-        # Update period of valid data, composite and weights.
-        #print >>f_array,("m: %s, len(new): %s\n" % (m, len(new)))
         for i in range(m, len(new), 12):  # TODO: Try new.count()
-            if new.mask[i]:
-            #if ma.isMaskedArray(new[i]):
+            if ma.isMaskedArray(new[i]):
                 continue
             new_month_weight = weight[i] + new_weight[i]
 
-            # NOTE: Debug. (Passed)
-            #print >>f,("\nm: %s, i: %s, weight[i]: %s, new_weight[i]: %s, new_month_weight: %s, composite[i]: %s" % (m, i, weight[i], new_weight[i], new_month_weight, composite[i]))
-
-            # FIXME: weight[i] * composite[i] 0.0 !!!
             if ma.isMaskedArray(composite[i]):
                 composite[i] = composite[i].filled(fill_value=9999.0)
+                #composite[i] = 9999.0
             composite[i] = (weight[i] * composite[i] + new_weight[i] * (new[i] + bias)) / new_month_weight
 
-            #print >>f,("\ncomposite[i]: %s, new[i]: %s" % (composite[i], new[i]))
-
-
-            #print >>f_array,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
-
             weight[i] = new_month_weight
-
-            #print >>f_array,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
-
             data_combined[m] += 1
-
-            #print >>f_array,("weight[i]: %s, new_weight[i]: %s, composite[i]: %s\n new[i]: %s, new_month_weight: %s, data_combined[m]: %s" % (weight[i], new_weight[i], composite[i], new[i], new_month_weight, data_combined[m]))
 
     return data_combined
 
@@ -130,6 +196,7 @@ def combine(composite, weight, new, new_weight, min_overlap):
     # A count (of combined data) for each month.
     data_combined = [0] * 12
 
+    #print("\nlist\n")
     for m in range(12):
         sum_new = 0.0  # Sum of data in new
         sum = 0.0  # Sum of data in composite
@@ -148,7 +215,7 @@ def combine(composite, weight, new, new_weight, min_overlap):
         bias = (sum-sum_new)/count
 
         #NOTE: So far OK
-        #print >>f,("\nm: %s, count: %s, sum: %s, sum_new: %s, bias: %s" % (m, count, sum, sum_new, bias))
+        #print("m: %s, count: %s, sum: %s, sum_new: %s, bias: %s" % (m, count, sum, sum_new, bias))
         #print >>f,("\ncomposite: %s" % composite)
 
         # Update period of valid data, composite and weights.
