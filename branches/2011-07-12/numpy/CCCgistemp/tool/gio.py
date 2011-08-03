@@ -669,7 +669,30 @@ def GHCNV2Reader_array(path="work/step2.v2", file=None, meta=None, year_min=None
     # same 12-digit ID.
     data.sort(order='uid')
 
-    #TODO: Stuck at the Series class
+    # TODO
+    if 0:
+        for (id, lines) in itertools.groupby(f, id12):
+            key = dict(uid=id, first_year=year_min)  # TODO: year_min
+            # 11-digit station ID.
+            stid = id[:11] # NOTE: Cutting the last digit? Why?
+            if meta and meta.get(stid):
+                key['station'] = meta[stid]
+            record = giss_data.Series(**key) # TODO: Stuck at the Series class
+            prev_line = None
+            for line in lines:
+                if line != prev_line:
+                    year = int(line[12:16])
+                    temps = [v2_float(line[a:a+5]) for a in range(16, 16+12*5, 5)]
+                    record.add_year(year, temps)
+                    prev_line = line
+                else:
+                    print ("NOTE: repeated record found: Station %s year %s;"
+                           " data are identical" % (line[:12],line[12:16]))
+
+            if len(record) != 0:
+                yield record
+
+        f.close()
 
     return data
 
