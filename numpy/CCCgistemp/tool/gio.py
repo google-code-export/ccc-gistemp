@@ -681,11 +681,11 @@ def GHCNV2Reader_array(path="work/step2.v2", file=None, meta=None, year_min=None
             prev_line = None
             for line in lines:
                 if line != prev_line:
-                    year = int(line[12:16])
-                    temps = [v2_float(line[a:a+5]) for a in range(16, 16+12*5, 5)]
-                    record.add_year(year, temps)
+                    year = int(line[12:16]) # NOTE: data['year']
+                    temps = [v2_float(line[a:a+5]) for a in range(16, 16+12*5, 5)] # NOTE: data['1-12'] can be masked here!
+                    record.add_year(year, temps) # Still need to
                     prev_line = line
-                else:
+                else: # NOTE: I guess that np,unique can take care of that
                     print ("NOTE: repeated record found: Station %s year %s;"
                            " data are identical" % (line[:12],line[12:16]))
 
