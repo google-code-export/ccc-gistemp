@@ -193,7 +193,7 @@ class StationRecordWriter(object):
     """Writes station records into a binary format that is the
     traditional output of Step 2 (but more recent versions of
     ccc-gistemp use a v2.mean style output).
-    
+
     This format is partly documented in the header comment of the
     program STEP3/to.SBBXgrid.f from the GISTEMP sources, where a
     comment says "READS NCAR FILES".  NCAR is the National Center
@@ -387,7 +387,7 @@ def StationTsReader(path):
         return line[0] == ' '
 
     for (header_line, lines) in itertools.groupby(f, isheader):
-        if header_line: 
+        if header_line:
             # Line beginning with a blank introduces a new station
             # record.
             lines = list(lines)
@@ -439,7 +439,7 @@ def GHCNV3Reader(path=None, file=None, meta=None, year_min=None, scale=None):
 
     If `year_min` is specified, then only years >= year_min are kept
     (the default, None, keeps all years).
-    
+
     If *scale* is specified then the (integer) values in the file are
     multiplied by *scale* before being returned.  When it is not
     specified (the normal case), the scale is derived from the element
@@ -575,7 +575,7 @@ def GHCNV2Reader(path=None, file=None, meta=None, year_min=None):
     If a *meta* dict is supplied then the Series instance will have its
     "station" attribute set to value corresponding to the 11-digit ID in
     the *meta* dict.
-    
+
     If `year_min` is specified, then only years >= year_min are kept
     (the default, None, keeps all years).
 
@@ -633,6 +633,43 @@ def GHCNV2Reader(path=None, file=None, meta=None, year_min=None):
 
     f.close()
 
+import numpy as np
+
+def GHCNV2Reader_array(path="work/step2.v2", file=None, meta=None, year_min=None):
+    """
+    Reads a file in GHCN v2.mean format and yields each station.
+
+    If a *meta* dict is supplied then the Series instance will have its
+    "station" attribute set to value corresponding to the 11-digit ID in
+    the *meta* dict.
+
+    If `year_min` is specified, then only years >= year_min are kept
+    (the default, None, keeps all years).
+
+    Traditionally a file in this format was the output of Step 0 (and
+    of course the format used by the GHCN source), but modern ccc-gistemp
+    produces this format for the outputs of Steps 0, 1, and 2.
+    """
+    if path:
+        f = open(path)
+    else:
+        f = file
+
+    # int uid , int year, 12 float entries
+    dtype = "i8,i4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4"
+    names = ['uid','year','1','2','3','4','5','6','7','8','9','10','11','12']
+    delimiter = [12,4,5,5,5,5,5,5,5,5,5,5,5,5]
+
+    data = np.genfromtxt(f,
+                         dtype=dtype,
+                         names=names,
+                         delimiter=delimiter)
+
+    # Group the input file into blocks of lines, all of which share the
+    # same 12-digit ID.
+    data.sort(order='uid')
+
+    return data
 
 class GHCNV2Writer(object):
     """Write a file in GHCN v2.mean format. See also GHCNV2Reader."""
@@ -670,7 +707,7 @@ class GHCNV2Writer(object):
 
 def DecimalReader(path, year_min=-9999):
     """Reads a file in Decimal format and yields each station.
-    
+
     If `year_min` is specified, then only years >= year_min are kept
     (the default, -9999, effectively keeps all years).
     """
@@ -1080,7 +1117,7 @@ def station_metadata(path=None, file=None, format='v2'):
     # brightness over the US, see Hansen et al 2001), global_light
     # (GISTEMP specific field for global nighttime satellite
     # brightness).
-    # 
+    #
     # GISTEMP only uses some of the fields: uid, lat, lon, popcls (for
     # old-school rural/urban designation), us_light (for old-school
     # rural/urban designation in the US), global_light (for
@@ -1134,7 +1171,7 @@ def station_metadata(path=None, file=None, format='v2'):
         us_state=(33,35, str),
         name=    (36,66, str),
     )
-        
+
     if 'v2' == format:
         fields = v2fields
     elif 'v3' == format:
@@ -1152,7 +1189,7 @@ def station_metadata(path=None, file=None, format='v2'):
 
 def augmented_station_metadata(path=None, file=None, format='v2'):
     """Reads station metadata just like augmented_station_metadata() but
-    additionally augments records with metadata obtained from another 
+    additionally augments records with metadata obtained from another
     file, specified by parameters.augment_metadata.
     """
 
@@ -1359,7 +1396,7 @@ class Input:
             # ca.v2.inv, ca.tbl (all in the input directory).
             return read_generic(source)
         raise Exception("Cannot open source %r" % source)
-            
+
 # Each of the stepN_input functions below produces an iterator that
 # yields that data for that step feeding from data files.
 # Each of the stepN_output functions below is effectively a "tee" that
@@ -1757,7 +1794,7 @@ def step5_output_one(item):
     jzm = len(ann)
     iyrs = len(ann[0])
     monm = iyrs * 12
-    
+
     mode = meta.mode
     out = open_step5_outputs(mode)
     if mode == 'mixed':
@@ -1792,7 +1829,7 @@ def step5_output_one(item):
         the integer will not fit into a 5 character string, '*****' is
         returned (this emulates the Fortran convention of formatting
         999900 (which is the XBAD value in centikelvin) as a '*****'.
-        
+
         The year, *iy*, is lexically captured which is a bit horrible.
         """
         x = int(math.floor(100*ann[z][iy] + 0.5))
@@ -1837,7 +1874,7 @@ Year  Glob  NHem  SHem    -90N  -24N  -24S    -90N  -64N  -44N  -24N  -EQU  -24S
     # All the "WRITE(96+J" stuff in the Fortran is replaced with this
     # enumeration into the *out* array (an array of file descriptors).
     for j,outf in enumerate(out):
-        print >> outf, (tit[j] + ' Temperature Anomalies' + 
+        print >> outf, (tit[j] + ' Temperature Anomalies' +
           ' in .01 C     base period: 1951-1980')
         for iy in range(iy1tab-iyrbeg, iyrs):
             # Each year is formatted as a row of 18 numbers (12 months,
