@@ -265,18 +265,18 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                                            subbox_series, weight, new, wt,
                                            parameters.gridding_min_overlap)
                 else:
-                    if 0:  # List
+                    if 1:  # List
                         station_months = series.combine(
                                          subbox_series, weight, new, wt,
                                          parameters.gridding_min_overlap)
-                    if 1:
+                    if 0:
                         station_months = series.combine_array(
                                          subbox_series, weight, new, wt,
                                          parameters.gridding_min_overlap)
-                    #if 1:  # Bottleneck
-                        #station_months_bn = series.combine_bn(
-                                         #subbox_series, weight, new, wt,
-                                         #parameters.gridding_min_overlap)
+                    if 0:  # Bottleneck
+                        station_months_bn = series.combine_bn(
+                                         subbox_series, weight, new, wt,
+                                         parameters.gridding_min_overlap)
 
                 #assert(station_months_arr==station_months)
 
