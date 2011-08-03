@@ -669,6 +669,8 @@ def GHCNV2Reader_array(path="work/step2.v2", file=None, meta=None, year_min=None
     # same 12-digit ID.
     data.sort(order='uid')
 
+    #TODO: Stuck at the Series class
+
     return data
 
 class GHCNV2Writer(object):

@@ -36,9 +36,9 @@ class Test_gio(unittest.TestCase):
 
         # Numpy
         records_array = gio.GHCNV2Reader_array("work/step2_short.v2",
-                                          meta=gio.v2meta())
+                                               meta=gio.v2meta())
 
-        #assert
+        # TODO: assert something once I make Series object
 
     def test_long_step2_v2(self):
         """Test reading short version of step2.v2"""
