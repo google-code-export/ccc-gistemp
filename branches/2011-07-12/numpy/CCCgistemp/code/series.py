@@ -37,13 +37,11 @@ def combine_bn(composite, weight, new, new_weight, min_overlap):
     the existing weights for *composite*.
     """
 
-    new_weight = ensure_array(weight, new_weight)
+    new_weight = ensure_array_arr(weight, new_weight)
 
     # A count (of combined data) for each month.
     data_combined = [0] * 12
 
-    composite, weight, new, new_weight = map(np.asanyarray,
-                                       (composite, weight, new, new_weight))
     aa = composite.reshape(12, composite.size/12, order='F').copy()
     nn = new.reshape(12, new.size/12, order='F').copy()
 
@@ -79,10 +77,9 @@ def combine_bn(composite, weight, new, new_weight, min_overlap):
         bias = (sum-sum_new)/count
 
         # Update period of valid data, composite and weights.
-        for i in range(m, len(new), 12):  # TODO: Try new.count()
-            if 1: # NOTE: Bottleneck
-                if np.isnan(new_arr[i]):
-                    continue
+        for i in range(m, len(new), 12):
+            if np.isnan(new[i]):
+                continue
 
             new_month_weight = weight[i] + new_weight[i]
 
@@ -115,21 +112,17 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     the existing weights for *composite*.
     """
 
-    new_weight = ensure_array(weight, new_weight)
+    new_weight = ensure_array_arr(weight, new_weight)
 
     # A count (of combined data) for each month.
     data_combined = [0] * 12
 
-    composite, weight, new, new_weight = map(np.asanyarray,
-                                       (composite, weight, new, new_weight))
-    composite = ma.masked_equal(composite, 9999.0)
-    new = ma.masked_equal(new, 9999.0)
-    #aa = composite.reshape(12, composite.size/12, order='F').copy()
-    #nn = new.reshape(12, new.size/12, order='F').copy()
+    aa = composite.reshape(12, composite.size/12, order='F').copy()
+    nn = new.reshape(12, new.size/12, order='F').copy()
 
     for m in range(12):
         # NOTE: Same loop, using masked_arrays
-        if 1:
+        if 0:
             sum_new = 0.0  # Sum of data in new
             sum = 0.0  # Sum of data in composite
             count = 0  # Number of years where both new and composite are valid.
@@ -141,7 +134,7 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
                 sum_new += n
 
         # No loop, using masked_arrays
-        if 0:
+        if 1:
             a, n = aa[m],  nn[m]
             new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
             # Apply new mask
@@ -256,6 +249,19 @@ def ensure_array(exemplar, item):
         return item
     except TypeError:
         return (item,)*len(exemplar)
+
+def ensure_array_arr(exemplar, item):
+    """Coerces *item* to be an array (linear sequence); if *item* is
+    already an array it is returned unchanged.  Otherwise, an array of
+    the same length as exemplar is created which contains *item* at
+    every index.  The fresh array is returned.
+    """
+
+    try:
+        item[0]
+        return item
+    except IndexError:
+        return np.repeat(item, len(exemplar))
 
 def anomalize(data, reference_period=None, base_year=-9999):
     """Turn the series *data* into anomalies, based on monthly
