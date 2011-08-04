@@ -30,6 +30,9 @@ import warnings
 
 import read_config
 
+import numpy as np
+import numpy.ma as ma
+
 #: The base year for time series data. Data before this time is not
 #: used in calculations.
 BASE_YEAR = 1880
@@ -267,6 +270,14 @@ class Series(object):
         """The series of values (conventionally in degrees Celsius)."""
         return self._series
 
+    @property
+    def series_array(self):
+        """The series of values (conventionally in degrees Celsius)."""
+        self._series = np.asanyarray(self._series)
+        self._series[self._series == 9999.0] = np.nan # bottleneck
+        return self._series
+        #return ma.masked_equal(self._series, 9999.) # masked
+
     def __len__(self):
         """The length of the series."""
         return len(self._series)
@@ -330,7 +341,7 @@ class Series(object):
         where Y is the year and M is the month (from 1 to 12), thus the
         integer key when printed as a decimal has the ISO 8601 form:
         YYYYMM.
-        
+
         The result may or may not be shared with internals of this
         object."""
 
@@ -477,7 +488,7 @@ class Series(object):
             # was extremely buggy.
             return
         assert year == self.last_year + 1
-         
+
         self._series.extend(data)
     add_year = clear_cache(add_year)
 
