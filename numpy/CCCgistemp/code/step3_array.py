@@ -25,6 +25,7 @@ import itertools
 import numpy as np
 import numpy.ma as ma
 
+# Allow quick-and-dirty comparisons while running.
 NumPy = False
 
 if NumPy:
