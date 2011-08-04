@@ -656,9 +656,9 @@ def GHCNV2Reader_array(path="work/step2.v2", file=None, meta=None, year_min=None
         f = file
 
     # int uid , int year, 12 float entries
-    dtype = "i8,i4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4,f4"
+    dtype = 'i8'+'i4'+'f4'*12
     names = ['uid','year','1','2','3','4','5','6','7','8','9','10','11','12']
-    delimiter = [12,4,5,5,5,5,5,5,5,5,5,5,5,5]
+    delimiter = [12,4] + [5]*12
 
     data = np.genfromtxt(f,
                          dtype=dtype,
@@ -692,9 +692,9 @@ def GHCNV2Reader_array(path="work/step2.v2", file=None, meta=None, year_min=None
             if len(record) != 0:
                 yield record
 
-        f.close()
+            f.close()
 
-    return data
+        #return data
 
 class GHCNV2Writer(object):
     """Write a file in GHCN v2.mean format. See also GHCNV2Reader."""
