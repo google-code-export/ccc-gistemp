@@ -273,10 +273,11 @@ class Series(object):
     @property
     def series_array(self):
         """The series of values (conventionally in degrees Celsius)."""
-        self._series = np.asanyarray(self._series)
-        self._series[self._series == 9999.0] = np.nan # bottleneck
-        return self._series
-        #return ma.masked_equal(self._series, 9999.) # masked
+        if 0: # bottleneck
+            self._series = np.asanyarray(self._series)
+            self._series[self._series == 9999.0] = np.nan
+            return self._series
+        return ma.masked_equal(self._series, 9999.)
 
     def __len__(self):
         """The length of the series."""
