@@ -17,7 +17,7 @@ import bottleneck as bn
 Shared series-processing code in the GISTEMP algorithm.
 """
 
-def combine_array(composite, weight, new, new_weight, min_overlap, station_months):
+def combine_array(composite, weight, new, new_weight, min_overlap):
     """Run the GISTEMP combining algorithm.  This combines the data
     in the *new* array into the *composite* array.  *new* has weight
     *new_weight*; *composite* has weights in the *weight* array.
@@ -37,182 +37,61 @@ def combine_array(composite, weight, new, new_weight, min_overlap, station_month
     the existing weights for *composite*.
     """
 
-    #FIXME: converting to array here for now.
-    composite, weight, new, new_weight  = map(np.asanyarray,
-                                           (composite, weight, new, new_weight))
+    # Convert all input arrays (This won't be need once I convert
+    # Series.series to array).
+    composite, weight, new, new_weight = map(np.array,
+                                          (composite, weight, new, new_weight))
 
-
-    #mask = [bool(x) for x in weight]
-
+    # Reshape them into months (12) by years (132). (if Series.series is
+    # padded by default this can be done there as well.)
     size = composite.size
-    assert(weight.size==new.size)
-    assert(new.size==size)
-
-    # Reshape in months.
     shape = (12, size/12)
-
     composite, weight, new = map(lambda x: np.reshape(x, shape, order='F'),
-                                                 (composite, weight, new))
+                                                      (composite, weight, new))
 
-    present = new_weight * weight
+    # Get new and composite missing values.
+    new_mask = new == MISSING
+    comp_mask = composite == MISSING
+    # NOTE: David: comp_mask == [x==0.0 for x in weight] == weight == 0.
 
-    # No axis kw in count_nonzero.
-    count = [np.count_nonzero(mask[i,:]) for i in range(12)]
-    count = [np.count_nonzero(present[i,:]) for i in range(12)]
-
-    mask = np.ones_like(composite)
-
-    # Get composite invalid
-    mask[composite == 9999.] = 0
-    # Get new invalid
-    mask[new == 9999.] = 0
-
-    sum = np.sum( (mask * composite), axis=1)
-    sum_new = np.sum( (mask * new), axis=1)
-    count = [np.count_nonzero(mask[i,:]) for i in range(12)]
-
-    data_combined = [0] * 12
-    for m in range(12):
-        data_combined[m] = np.count_nonzero((mask * composite)[m,:])
-
-    #bias = np.sum((composite-new)*present) / np.sum(present)
-
-    assert(station_months==data_combined)
-
-    #nn = ma.masked_equal(new, 9.99900000e+03, copy=False)
-
-    #new_mask = np.where(aa.mask != nn.mask)
-    #aa.mask[new_mask] = True; nn.mask[new_mask] = True
-
-    #count = aa.count(axis=1) # 32
-    #sum = aa.sum(axis=1) # 381.70000000000005
-    #sum_new = nn.sum(axis=1) # 378.20000000000005
-
-    # A count (of combined data) for each month.
-    #data_combined = [0] * 12
-
-    #if 0:
-        #for m in range(12):
-            ## No loop, using masked_arrays
-            #a, n = aa[m],  nn[m]
-            #new_mask = ma.where(a.mask != n.mask)[0]  # Get NOT common masked elements.
-            ## Apply new mask
-            #a.mask[new_mask] = True
-            #n.mask[new_mask] = True
-            #count = a.count()
-            #sum = a.sum()
-            #sum_new = n.sum()
-
-        #if count < min_overlap:
-            #continue
-        #bias = (sum-sum_new)/count
-
-        #for i in range(m, len(new), 12):  # TODO: Try new.count()
-            #if ma.isMaskedArray(new[i]):
-                #continue
-            #new_month_weight = weight[i] + new_weight[i]
-
-            #if ma.isMaskedArray(composite[i]):
-                #composite[i] = composite[i].filled(fill_value=9999.0)
-                ##composite[i] = 9999.0
-            #composite[i] = (weight[i] * composite[i] + new_weight[i] * (new[i] + bias)) / new_month_weight
-
-            #weight[i] = new_month_weight
-            #data_combined[m] += 1
-
-    return data_combined
-
-def strip_mask(masked_array):
-    """
-    Process the standard arguments for efficient calculation.
-
-    Return unmasked arguments, plus a mask.
-    """
-    mask = ma.getmaskarray(masked_array)
-    array = ma.filled(masked_array, 9999.)
-    return array, mask
-
-def combine_masked(composite, weight, new, new_weight, min_overlap, station_months):
-    """Run the GISTEMP combining algorithm.  This combines the data
-    in the *new* array into the *composite* array.  *new* has weight
-    *new_weight*; *composite* has weights in the *weight* array.
-
-    *new_weight* can be either a constant or an array of weights for
-     each datum in *new*.
-
-    For each of the 12 months of the year, track is kept of how many
-    new data are combined.  This list of 12 elements is returned.
-
-    Each month of the year is considered separately.  For the set of
-    times where both *composite* and *new* have data the mean difference
-    (a bias) is computed.  If there are fewer than *min_overlap* years
-    in common the data (for that month of the year) are not combined.
-    The bias is subtracted from the *new* record and it is point-wise
-    combined into *composite* according to the weight *new_weight* and
-    the existing weights for *composite*.
-    """
-
-    # A count (of combined data) for each month.
-
-    # Reshape in months.
-    size = composite.size
-    assert(weight.size==new.size)
-    assert(new.size==size)
-    shape = (12, size/12)
-
-    composite, weight, new = map(lambda x: np.reshape(x, shape, order='F'),
-                                                 (composite, weight, new))
-
-    composite, comp_mask = strip_mask(composite)
-    new, new_mask = strip_mask(new)
-
-    mod_mask = comp_mask != new_mask
-
-    # Combined mask.
+    # Combined missing values in both *composite* and *new* into one mask.
+    # TODO: If I do the opposite I can avoid the copy.
+    # new_mask is re-used, but comp_mask isn't.
     mask = new_mask.copy()
-    mask[mod_mask] = True
+    mask[comp_mask] = True
     mask = ~mask
+    # NOTE: mask[i] is True (1) when both composite and new are valid.
 
-    #composite = ma.array(composite, mask=comp_mask, copy=False)
-    #new = ma.array(new, mask=comp_mask, copy=False)
-
+    # np.count_nonzero has no axis argument.
     count = np.array([np.count_nonzero(mask[i,:]) for i in range(12)])
-
     sum = np.sum((composite * mask), axis=1)
     sum_new = np.sum( (new * mask), axis=1)
 
-    bias = np.sum((composite - new) * mask, axis=1)/ np.sum(mask, axis=1)
+    # FIXME: I'm getting some zero divide here as well (found the composite
+    # warning first.) I must check the consequences of this.
+    bias = np.sum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
 
+    # Make new_weight an array of 12x132 with zeros at *new* invalid points.
+    new_weight = new_weight * ~new_mask
+
+    # Check for enough months
+    enough_months = count >= min_overlap
+    # TODO: I suspect that this part is not needed.
+    new_weight *= enough_months[:,None]
 
     new_month_weight = weight + new_weight
 
-    comp = (weight * composite + new_weight * (new + bias[:,None])) / new_month_weight
+    # FIXME: I'm getting some zero divide here at points where both composite
+    # and new where invalid. I believe is is safe to set them o zero.
+    composite = (weight * composite + new_weight * (new + bias[:,None])) / new_month_weight
+    composite[np.isnan(composite)] = 0
 
-    new_count = ma.masked_array(comp, new_mask).count(axis=1)
+    new_count = ma.masked_array(composite, new_mask).count(axis=1)
 
-    if 0:
-        count[count < 20] = 0
-        new_count[new_count < 20] = 0
+    data_combined = (new_count * enough_months).tolist()
 
-        mask = np.array([np.bool(k) for k in count])
-
-        data_combined = []
-        for x, y in zip(count, new_count):
-            if  x >= 20:
-                data_combined.append(y)
-            elif x < 20 and y < 20:
-                data_combined.append(0)
-            else:
-                data_combined.append(y)
-
-        data_combined = new_count * mask
-
-    data_combined = new_count.tolist()
-
-    if not data_combined == station_months:
-        print "         count = {0:>2}\n     new_count = {1:>2}\n data_combined = {2:>2}\nstation_months = {3:>2}\n".format(count, new_count, data_combined, station_months)
-
-    assert(station_months==data_combined)
+    #if not data_combined == station_months:
+        #print "         count = {0:>2}\n     new_count = {1:>2}\n data_combined = {2:>2}\nstation_months = {3:>2}\n".format(count, new_count, data_combined, station_months)
 
     return data_combined
 
@@ -243,7 +122,7 @@ def combine(composite, weight, new, new_weight, min_overlap):
     data_combined = [0] * 12
 
     # TODO: REMOVE
-    f = open('list.txt','w')
+    #f = open('list.txt','w')
 
     for m in range(12):
         sum_new = 0.0  # Sum of data in new
@@ -256,12 +135,12 @@ def combine(composite, weight, new, new_weight, min_overlap):
             count += 1
             sum += a
             sum_new += n
-
+            #print >>f, "count: %s, sum: %s, sum_new: %s" % (count, sum, sum_new)
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
-        print >>f, "m: %s" % m
-        print >>f, "count: %s, sum: %s, sum_new: %s, bias: %s" % (count, sum, sum_new, bias)
+        #print >>f, "m: %s" % m
+        #print >>f, "count: %s, sum: %s, sum_new: %s, bias: %s" % (count, sum, sum_new, bias)
 
         # Update period of valid data, composite and weights.
         for i in range(m, len(new), 12):
@@ -275,8 +154,9 @@ def combine(composite, weight, new, new_weight, min_overlap):
 
             data_combined[m] += 1
 
-    print >>f, "new_month_weight: %s\n, data_combined: %s" % (new_month_weight, data_combined)
+    #print >>f, "new_month_weight: %s\n, data_combined: %s" % (new_month_weight, data_combined)
     return data_combined
+
 
 def ensure_array(exemplar, item):
     """Coerces *item* to be an array (linear sequence); if *item* is
@@ -291,18 +171,6 @@ def ensure_array(exemplar, item):
     except TypeError:
         return (item,)*len(exemplar)
 
-def ensure_array_arr(exemplar, item):
-    """Coerces *item* to be an array (linear sequence); if *item* is
-    already an array it is returned unchanged.  Otherwise, an array of
-    the same length as exemplar is created which contains *item* at
-    every index.  The fresh array is returned.
-    """
-
-    try:
-        item[0]
-        return item
-    except IndexError:
-        return np.repeat(item, len(exemplar))
 
 def anomalize(data, reference_period=None, base_year=-9999):
     """Turn the series *data* into anomalies, based on monthly
