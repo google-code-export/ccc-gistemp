@@ -87,7 +87,6 @@ def combine_array(composite, weight, new, new_weight, min_overlap, station_month
     #count = aa.count(axis=1) # 32
     #sum = aa.sum(axis=1) # 381.70000000000005
     #sum_new = nn.sum(axis=1) # 378.20000000000005
-    #coco
 
     # A count (of combined data) for each month.
     #data_combined = [0] * 12
@@ -107,7 +106,6 @@ def combine_array(composite, weight, new, new_weight, min_overlap, station_month
         #if count < min_overlap:
             #continue
         #bias = (sum-sum_new)/count
-        #coco
 
         #for i in range(m, len(new), 12):  # TODO: Try new.count()
             #if ma.isMaskedArray(new[i]):
@@ -131,7 +129,7 @@ def strip_mask(masked_array):
     Return unmasked arguments, plus a mask.
     """
     mask = ma.getmaskarray(masked_array)
-    array = ma.filled(masked_array, 0)
+    array = ma.filled(masked_array, 9999.)
     return array, mask
 
 def combine_masked(composite, weight, new, new_weight, min_overlap, station_months):
@@ -155,7 +153,6 @@ def combine_masked(composite, weight, new, new_weight, min_overlap, station_mont
     """
 
     # A count (of combined data) for each month.
-    data_combined = [0] * 12
 
     # Reshape in months.
     size = composite.size
@@ -171,44 +168,51 @@ def combine_masked(composite, weight, new, new_weight, min_overlap, station_mont
 
     mod_mask = comp_mask != new_mask
 
-    new_mask[mod_mask] = True
-    new_mask = ~new_mask
+    # Combined mask.
+    mask = new_mask.copy()
+    mask[mod_mask] = True
+    mask = ~mask
 
     #composite = ma.array(composite, mask=comp_mask, copy=False)
     #new = ma.array(new, mask=comp_mask, copy=False)
 
-    count = [np.count_nonzero(new_mask[i,:]) for i in range(12)]
-    sum = np.sum((composite * new_mask), axis=1)
-    sum_new = np.sum( (new * new_mask), axis=1)
-    bias = np.sum((composite - new) * new_mask, axis=1)/ np.sum(new_mask, axis=1)
+    count = np.array([np.count_nonzero(mask[i,:]) for i in range(12)])
 
-    for m in range(12):
-        data_combined[m] = np.count_nonzero((new_mask * composite)[m,:])
+    sum = np.sum((composite * mask), axis=1)
+    sum_new = np.sum( (new * mask), axis=1)
 
-    #bias = np.sum((composite-new)*present) / np.sum(present)
+    bias = np.sum((composite - new) * mask, axis=1)/ np.sum(mask, axis=1)
 
-    assert(station_months==data_combined)
 
     new_month_weight = weight + new_weight
-    composite = (weight * composite + new_weight * (new + bias[:,None])) / new_month_weight
+
+    comp = (weight * composite + new_weight * (new + bias[:,None])) / new_month_weight
+
+    new_count = ma.masked_array(comp, new_mask).count(axis=1)
 
     if 0:
-        if count < min_overlap:
-            continue
-        bias = (sum-sum_new)/count
+        count[count < 20] = 0
+        new_count[new_count < 20] = 0
 
-        for i in range(m, len(new), 12):  # TODO: Try new.count()
-            if ma.isMaskedArray(new[i]):
-                continue
-            new_month_weight = weight[i] + new_weight[i]
+        mask = np.array([np.bool(k) for k in count])
 
-            if ma.isMaskedArray(composite[i]):
-                composite[i] = composite[i].filled(fill_value=9999.0)
-                #composite[i] = 9999.0
-            composite[i] = (weight[i] * composite[i] + new_weight[i] * (new[i] + bias)) / new_month_weight
+        data_combined = []
+        for x, y in zip(count, new_count):
+            if  x >= 20:
+                data_combined.append(y)
+            elif x < 20 and y < 20:
+                data_combined.append(0)
+            else:
+                data_combined.append(y)
 
-            weight[i] = new_month_weight
-            data_combined[m] += 1
+        data_combined = new_count * mask
+
+    data_combined = new_count.tolist()
+
+    if not data_combined == station_months:
+        print "         count = {0:>2}\n     new_count = {1:>2}\n data_combined = {2:>2}\nstation_months = {3:>2}\n".format(count, new_count, data_combined, station_months)
+
+    assert(station_months==data_combined)
 
     return data_combined
 
@@ -256,6 +260,7 @@ def combine(composite, weight, new, new_weight, min_overlap):
         if count < min_overlap:
             continue
         bias = (sum-sum_new)/count
+        print >>f, "m: %s" % m
         print >>f, "count: %s, sum: %s, sum_new: %s, bias: %s" % (count, sum, sum_new, bias)
 
         # Update period of valid data, composite and weights.
