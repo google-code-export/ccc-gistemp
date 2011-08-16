@@ -17,6 +17,7 @@ import bottleneck as bn
 Shared series-processing code in the GISTEMP algorithm.
 """
 
+
 def combine_array(composite, weight, new, new_weight, min_overlap):
     """Run the GISTEMP combining algorithm.  This combines the data
     in the *new* array into the *composite* array.  *new* has weight
@@ -35,63 +36,83 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     The bias is subtracted from the *new* record and it is point-wise
     combined into *composite* according to the weight *new_weight* and
     the existing weights for *composite*.
+
+    NOTE: I'm calling this series.combine_array() because step5 also calls
+          series.combine(). One I check if this version works OK there as well
+          I'll rename it to series.combine().
     """
 
-    # Convert all input arrays (This won't be need once I convert
-    # Series.series to array).
-    composite, weight, new, new_weight = map(np.array,
+    new_weight = ensure_array(weight, new_weight)
+
+    # Convert all input to NumPy arrays. This won't be need once I convert
+    # Series.series to array.
+    composite, weight, new, new_weight = map(np.asanyarray,
                                           (composite, weight, new, new_weight))
 
-    # Reshape them into months (12) by years (132). (if Series.series is
-    # padded by default this can be done there as well.)
+    # Reshape the arrays into months (12) by years (132 -- so far.).
+    # If Series.series is padded by default this can be done there together
+    # with the array conversion at Series.series.
     size = composite.size
     shape = (12, size/12)
     composite, weight, new = map(lambda x: np.reshape(x, shape, order='F'),
                                                       (composite, weight, new))
 
-    # Get new and composite missing values.
+    # Get *new* and *composite* missing values.
     new_mask = new == MISSING
     comp_mask = composite == MISSING
-    # NOTE: David: comp_mask == [x==0.0 for x in weight] == weight == 0.
+    # NOTE: David: comp_mask = [x==0.0 for x in weight] or weight == 0.
 
-    # Combined missing values in both *composite* and *new* into one mask.
-    # TODO: If I do the opposite I can avoid the copy.
-    # new_mask is re-used, but comp_mask isn't.
-    mask = new_mask.copy()
-    mask[comp_mask] = True
-    mask = ~mask
-    # NOTE: mask[i] is True (1) when both composite and new are valid.
-
-    # np.count_nonzero has no axis argument.
-    count = np.array([np.count_nonzero(mask[i,:]) for i in range(12)])
-    sum = np.sum((composite * mask), axis=1)
-    sum_new = np.sum( (new * mask), axis=1)
-
-    # FIXME: I'm getting some zero divide here as well (found the composite
-    # warning first.) I must check the consequences of this.
-    bias = np.sum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
-
-    # Make new_weight an array of 12x132 with zeros at *new* invalid points.
+    # NOTE: Make *new_weight* an array of month by year with zeros at *new*
+    # invalid points. This might be a problem for step5. It would be preferable
+    # that new_weight comes as an array at the input.
     new_weight = new_weight * ~new_mask
 
-    # Check for enough months
+    # Combined missing values from both *composite* and *new* into one mask.
+    if 0:  # FIXME: If I do the opposite I can avoid the copy, *new_mask* is re-used, but *comp_mask* isn't.
+        mask = new_mask.copy()
+        mask[comp_mask] = True
+        # NOTE: mask[i] is True (1) when both composite and new are valid.
+        mask = ~mask
+    comp_mask[new_mask] = True
+    # NOTE: mask[i] is True (1) when both composite and new are valid.
+    mask = ~comp_mask
+
+    # We need the listcomp because np.count_nonzero() does not have an axis kw.
+    count = np.array([np.count_nonzero(mask[i,:]) for i in range(12)])
+    sum = np.sum((composite * mask), axis=1)
+    sum_new = np.sum((new * mask), axis=1)
+
+    # FIXME: I'm getting some zero divide here as well (found the updated
+    # *composite* warning first below.) I must check the consequences of this...
+    if 0: bias = np.sum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
+    bias = np.nansum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
+    if 0: bias = (sum-sum_new)/count
+
+    # Check for enough months (minimum overlap.)
     enough_months = count >= min_overlap
-    # TODO: I suspect that this part is not needed.
+
+    # FIXME: I suspect that this part is not needed.
     new_weight *= enough_months[:,None]
 
     new_month_weight = weight + new_weight
 
+    composite = (weight * composite + new_weight *
+                                   (new + bias[:,None])) / new_month_weight
     # FIXME: I'm getting some zero divide here at points where both composite
-    # and new where invalid. I believe is is safe to set them o zero.
-    composite = (weight * composite + new_weight * (new + bias[:,None])) / new_month_weight
+    # and new where invalid. I believe it is safe to set them to zero.
     composite[np.isnan(composite)] = 0
 
-    new_count = ma.masked_array(composite, new_mask).count(axis=1)
+    if 0: new_count = ma.masked_array(composite, new_mask).count(axis=1)
+
+    # NOTE: should it be comp_mask ?
+    composite[new_mask] = 0
+    new_count = np.array([np.count_nonzero(composite[i,:]) for i in range(12)])
 
     data_combined = (new_count * enough_months).tolist()
 
-    #if not data_combined == station_months:
-        #print "         count = {0:>2}\n     new_count = {1:>2}\n data_combined = {2:>2}\nstation_months = {3:>2}\n".format(count, new_count, data_combined, station_months)
+    if 0:  # TODO: Remove this part.
+        if not data_combined == station_months:
+            print "         count = {0:>2}\n     new_count = {1:>2}\n data_combined = {2:>2}\nstation_months = {3:>2}\n".format(count, new_count, data_combined, station_months)
 
     return data_combined
 
