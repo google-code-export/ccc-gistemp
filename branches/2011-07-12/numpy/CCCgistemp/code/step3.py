@@ -24,9 +24,6 @@ import os.path
 import sys
 import itertools
 
-import numpy as np
-import numpy.ma as ma
-
 log = open(os.path.join('log', 'step3.log'), 'w')
 
 
@@ -123,18 +120,11 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
 
     # Convert to list because we re-use it for each box (region).
     station_records = list(station_records)
-    #NOTE:
-    # %time station_records = list(records)
-    # CPU times: user 7.53 s, sys: 0.07 s, total: 7.60 s
-    # Wall time: 7.61 s
 
     # Descending sort by number of good records.
     # TODO: Switch to using Python's sort method here, although it
     # will change the results.
     sort(station_records, lambda x,y: y.good_count - x.good_count)
-    #%timeit sort(station_records, lambda x,y: y.good_count - x.good_count)
-    #dribble = sys.stdout
-    #1 loops, best of 3: 21.5 s per loop
 
     # A dribble of progress messages.
     dribble = sys.stdout
@@ -143,46 +133,25 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
     arc = radius / earth.radius
     arcdeg = arc * 180 / math.pi
 
-    # NOTE: 1000 loops, best of 3: 1.09 ms per loop [numpy]
-    # NOTE: 1000 loops, best of 3: 292 us per loop [math]
     regions = list(eqarea.gridsub())
 
     for region in regions:
-        # NOTE: 100000 loops, best of 3: 12.3 us per loop
-        #box, subboxes = region[0], np.asanyarray(list(region[1]), dtype=np.float)
-
-        # NOTE: 1000000 loops, best of 3: 1.16 us per loop
         box, subboxes = region[0], list(region[1])
-
-        #subboxes = np.asanyarray(subboxes)
 
         # Count how many cells are empty
         n_empty_cells = 0
         for subbox in subboxes:
             # Select and weight stations
-
-            # NOTE: 100000 loops, best of 3: 9.9 us per loop [numpy]
-            # NOTE: 100000 loops, best of 3: 2.07 us per loop [math]
             centre = eqarea.centre(subbox)
 
-            #dribble.write("\rsubbox at %+05.1f%+06.1f (%d empty)" % (
-              #centre + (n_empty_cells,)))
-            #dribble.flush()
+            dribble.write("\rsubbox at %+05.1f%+06.1f (%d empty)" % (
+              centre + (n_empty_cells,)))
+            dribble.flush()
 
-            # Determine the contributing stations to this grid cell.
-            #NOTE: 10000 loops, best of 3: 28.4 us per loop
-            #contributors = list(incircle_numpy(station_records, arc, *centre))
-
-            # NOTE: 100000 loops, best of 3: 14.7 us per loop
             contributors = list(incircle(station_records, arc, *centre))
 
             # Combine data.
-            # NOTE: 100000 loops, best of 3: 7.11 us per loop
             subbox_series = [MISSING] * max_months
-
-            # NOTE: 100000 loops, best of 3: 9.61 us per loop
-            #subbox_series = np.zeros(max_months)+MISSING
-            # NOTE: max_months = 1e3, NumPy will be fater only after 1e4
 
             if not contributors:
                 box_obj = giss_data.Series(series=subbox_series,
@@ -202,15 +171,15 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             a = record.series # just a temporary
             subbox_series[offset:offset + len(a)] = a
 
-            # NOTE: Masked array.
-            subbox_series_masked = ma.masked_equal(subbox_series, 9999.0)
-            assert(subbox_series_masked.filled(fill_value=9999.0).tolist()==subbox_series)
-
             max_weight = wt
 
-            weight_masked = wt * ~subbox_series_masked.mask
             weight = [wt*valid(v) for v in subbox_series]
-            assert(weight_masked.tolist()==weight)
+
+            if 0:
+                subbox_series_masked = ma.masked_equal(subbox_series, 9999.0)
+                assert(subbox_series_masked.filled(fill_value=9999.0).tolist()==subbox_series)
+                weight_masked = wt * ~subbox_series_masked.mask
+                assert(weight_masked.tolist()==weight)
 
             # For logging, keep a list of stations that contributed.
             # Each item in this list is a triple (in list form, so that
@@ -222,12 +191,12 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
             # '0' in position *i* indicates that the month was not used,
             # a '1' indicates that is was used.  January is position 0.
 
-            a = subbox_series_masked.reshape(12, subbox_series_masked.size/12, order='F')
-            l_masked = np.any(~a.mask, axis=1)
-
             l = [any(valid(v) for v in subbox_series[i::12]) for i in range(12)]
 
-            assert(l_masked.tolist()==l)
+            if 0:
+                a = subbox_series_masked.reshape(12, subbox_series_masked.size/12, order='F')
+                l_masked = np.any(~a.mask, axis=1)
+                assert(l_masked.tolist()==l)
 
             s = ''.join('01'[x] for x in l)
             contributed = [[record.uid,wt,s]]
@@ -241,22 +210,15 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 aa, bb = record.rel_first_month, record.rel_last_month
                 new[aa - 1:bb] = record.series
 
-                new_masked = ma.masked_equal(new, 9999.0)
-                assert(new_masked.filled(fill_value=9999.0).tolist()==new)
-
-                station_months = series.combine(
-                                         subbox_series, weight, new, wt,
-                                         parameters.gridding_min_overlap)
-
-                station_months_masked = series.combine_masked(
-                                           subbox_series_masked, weight_masked, new_masked, wt,
-                                           parameters.gridding_min_overlap, station_months)
-
-                #station_months_array = series.combine_array(
-                                           #subbox_series, weight, new, wt,
-                                           #parameters.gridding_min_overlap, station_months)
-
-                #assert(station_months_masked==station_months)
+                if 1:
+                    station_months = series.combine(
+                                            subbox_series, weight, new, wt,
+                                            parameters.gridding_min_overlap)
+                if 0:
+                    station_months_array = series.combine_array(
+                                            subbox_series, weight, new, wt,
+                                            parameters.gridding_min_overlap)
+                    assert(station_months_array==station_months)
 
                 n_good_months = sum(station_months)
                 total_good_months += n_good_months
@@ -268,8 +230,6 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 contributed.append([record.uid,wt,s])
 
                 max_weight = max(max_weight, wt)
-
-                #subbox_series = subbox_series.filled(fill_value=9999.0).tolist()
 
             series.anomalize(subbox_series,
                              parameters.gridding_reference_period, first_year)
@@ -283,10 +243,10 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
         plural_suffix = 's'
         if n_empty_cells == 1:
             plural_suffix = ''
-        #dribble.write(
-          #'\rRegion (%+03.0f/%+03.0f S/N %+04.0f/%+04.0f W/E): %d empty cell%s.\n' %
-            #(tuple(box) + (n_empty_cells,plural_suffix)))
-    #dribble.write("\n")
+        dribble.write(
+          '\rRegion (%+03.0f/%+03.0f S/N %+04.0f/%+04.0f W/E): %d empty cell%s.\n' %
+            (tuple(box) + (n_empty_cells,plural_suffix)))
+    dribble.write("\n")
 
 def asjson(obj):
     """Return a string: The JSON representation of the object "obj".
