@@ -10,8 +10,6 @@ import itertools
 from giss_data import valid, invalid, MISSING
 
 import numpy as np
-import numpy.ma as ma
-import bottleneck as bn
 
 """
 Shared series-processing code in the GISTEMP algorithm.
@@ -37,12 +35,15 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     combined into *composite* according to the weight *new_weight* and
     the existing weights for *composite*.
 
-    NOTE: I'm calling this series.combine_array() because step5 also calls
-          series.combine(). One I check if this version works OK there as well
-          I'll rename it to series.combine().
+    NOTE: I'm calling function series.combine_array() because step5 also calls
+          series.combine(). Once I check if this version works OK there as well
+          I'll substitute series.combine() with this version.
     """
 
-    new_weight = ensure_array(weight, new_weight)
+    if 0:
+        # TODO: This must be fixed for step5. If step5 array is the same size
+        # as new_mask nothing is needed.
+        new_weight = ensure_array(weight, new_weight)
 
     # Convert all input to NumPy arrays. This won't be need once I convert
     # Series.series to array.
@@ -53,7 +54,7 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     # If Series.series is padded by default this can be done there together
     # with the array conversion at Series.series.
     size = composite.size
-    shape = (12, size/12)
+    shape = (12, size / 12)
     composite, weight, new = map(lambda x: np.reshape(x, shape, order='F'),
                                                       (composite, weight, new))
 
@@ -68,51 +69,48 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
     new_weight = new_weight * ~new_mask
 
     # Combined missing values from both *composite* and *new* into one mask.
-    if 0:  # FIXME: If I do the opposite I can avoid the copy, *new_mask* is re-used, but *comp_mask* isn't.
-        mask = new_mask.copy()
-        mask[comp_mask] = True
-        # NOTE: mask[i] is True (1) when both composite and new are valid.
-        mask = ~mask
     comp_mask[new_mask] = True
     # NOTE: mask[i] is True (1) when both composite and new are valid.
     mask = ~comp_mask
 
     # We need the listcomp because np.count_nonzero() does not have an axis kw.
-    count = np.array([np.count_nonzero(mask[i,:]) for i in range(12)])
+    count = np.array([np.count_nonzero(mask[i, :]) for i in range(12)])
     sum = np.sum((composite * mask), axis=1)
     sum_new = np.sum((new * mask), axis=1)
 
     # FIXME: I'm getting some zero divide here as well (found the updated
     # *composite* warning first below.) I must check the consequences of this...
-    if 0: bias = np.sum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
     bias = np.nansum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
-    if 0: bias = (sum-sum_new)/count
+    if 0:
+        bias = np.sum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
+    if 0:
+        bias = (sum - sum_new) / count
 
     # Check for enough months (minimum overlap.)
     enough_months = count >= min_overlap
 
     # FIXME: I suspect that this part is not needed.
-    new_weight *= enough_months[:,None]
+    new_weight *= enough_months[:, None]
 
     new_month_weight = weight + new_weight
 
     composite = (weight * composite + new_weight *
-                                   (new + bias[:,None])) / new_month_weight
+                                   (new + bias[:, None])) / new_month_weight
     # FIXME: I'm getting some zero divide here at points where both composite
     # and new where invalid. I believe it is safe to set them to zero.
     composite[np.isnan(composite)] = 0
 
-    if 0: new_count = ma.masked_array(composite, new_mask).count(axis=1)
-
     # NOTE: should it be comp_mask ?
     composite[new_mask] = 0
-    new_count = np.array([np.count_nonzero(composite[i,:]) for i in range(12)])
+    new_count = np.array([np.count_nonzero(composite[i, :]) for i in range(12)])
 
     data_combined = (new_count * enough_months).tolist()
 
-    if 0:  # TODO: Remove this part.
+    if 0:  # TODO: DEBUG print (remove this part).
         if not data_combined == station_months:
-            print "         count = {0:>2}\n     new_count = {1:>2}\n data_combined = {2:>2}\nstation_months = {3:>2}\n".format(count, new_count, data_combined, station_months)
+            print("""         count = {0:>2}\n     new_count = {1:>2}\n
+            data_combined = {2:>2}\nstation_months = {3:>2}\n""".format(count,
+            new_count, data_combined, station_months))
 
     return data_combined
 
@@ -150,7 +148,7 @@ def combine(composite, weight, new, new_weight, min_overlap):
         sum = 0.0  # Sum of data in composite
         count = 0  # Number of years where both new and composite are valid.
 
-        for a,n in itertools.izip(composite[m::12], new[m::12]):
+        for a, n in itertools.izip(composite[m::12], new[m::12]):
             if invalid(a) or invalid(n):
                 continue
             count += 1
@@ -159,7 +157,7 @@ def combine(composite, weight, new, new_weight, min_overlap):
             #print >>f, "count: %s, sum: %s, sum_new: %s" % (count, sum, sum_new)
         if count < min_overlap:
             continue
-        bias = (sum-sum_new)/count
+        bias = (sum - sum_new) / count
         #print >>f, "m: %s" % m
         #print >>f, "count: %s, sum: %s, sum_new: %s, bias: %s" % (count, sum, sum_new, bias)
 
@@ -169,7 +167,8 @@ def combine(composite, weight, new, new_weight, min_overlap):
                 continue
             new_month_weight = weight[i] + new_weight[i]
 
-            composite[i] = (weight[i]*composite[i] + new_weight[i]*(new[i]+bias))/new_month_weight
+            composite[i] = (weight[i] * composite[i] + new_weight[i] *
+                                            (new[i] + bias)) / new_month_weight
 
             weight[i] = new_month_weight
 
@@ -190,7 +189,7 @@ def ensure_array(exemplar, item):
         item[0]
         return item
     except TypeError:
-        return (item,)*len(exemplar)
+        return (item,) * len(exemplar)
 
 
 def anomalize(data, reference_period=None, base_year=-9999):
@@ -211,6 +210,7 @@ def anomalize(data, reference_period=None, base_year=-9999):
     for m in range(12):
         data[m::12] = anoms[m]
 
+
 def valid_mean(seq, min=1):
     """Takes a sequence, *seq*, and computes the mean of the valid
     items (using the valid() function).  If there are fewer than *min*
@@ -223,9 +223,10 @@ def valid_mean(seq, min=1):
             sum += x
             count += 1
     if count >= min:
-        return sum/float(count)
+        return sum / float(count)
     else:
         return MISSING
+
 
 def monthly_anomalies(data, reference_period=None, base_year=-9999):
     """Calculate monthly anomalies, by subtracting from every datum
@@ -270,8 +271,9 @@ def monthly_anomalies(data, reference_period=None, base_year=-9999):
                 return MISSING
             monthly_anom.append(map(asanom, row))
         else:
-            monthly_anom.append([MISSING]*years)
+            monthly_anom.append([MISSING] * years)
     return monthly_mean, monthly_anom
+
 
 # Originally from step1.py
 def monthly_annual(data):
@@ -298,15 +300,15 @@ def monthly_annual(data):
     for months in [[11, 0, 1],
                    [2, 3, 4],
                    [5, 6, 7],
-                   [8, 9, 10],]:
+                   [8, 9, 10], ]:
         # Need at least two valid months for a valid season.
         seasonal_mean.append(valid_mean((monthly_mean[m] for m in months),
-                                        min = 2))
+                                        min=2))
         # A list of 3 data series, each being an extract for a
         # particular month.
         month_in_season = []
         for m in months:
-            row = monthly_anom[m] # the list of anomalies for month m
+            row = monthly_anom[m]  # the list of anomalies for month m
             if m == 11:
                 # For December, we take the December of the previous
                 # year.  Which we do by shifting the array, and not
@@ -317,17 +319,16 @@ def monthly_annual(data):
         seasonal_anom_row = []
         for n in range(years):
             m = valid_mean((data[n] for data in month_in_season),
-                           min = 2)
+                           min=2)
             seasonal_anom_row.append(m)
         seasonal_anom.append(seasonal_anom_row)
 
     # Average seasonal means to make annual mean,
     # and average seasonal anomalies to make annual anomalies
     # (note: annual anomalies are December-to-November).
-    annual_mean = valid_mean(seasonal_mean, min = 3)
+    annual_mean = valid_mean(seasonal_mean, min=3)
     annual_anom = []
     for n in range(years):
         annual_anom.append(valid_mean((data[n] for data in seasonal_anom),
-                                      min = 3))
+                                      min=3))
     return (annual_mean, annual_anom)
-
