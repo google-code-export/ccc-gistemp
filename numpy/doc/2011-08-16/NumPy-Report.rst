@@ -9,16 +9,17 @@ alternative implementation of ccc-gistemp using NumPy arrays.
 
 The problem
 -----------
-#. The original ccc-gistemp is is pure python and make use of list
-   comprehension and loops for its algebra. That result in a very slow code,
-   approximately 30 minutes on a Intel(R) Core(TM)2 Duo CPU E8400 @ 3.00GHz
+#. The original ccc-gistemp is coded in pure python relying on list
+   comprehensions and loops for its algebra. That result is a slow code that
+   takes approximately 30 minutes on a Intel(R) Core(TM)2 Duo CPU E8400@3.00GHz
    machine.
-#. The code relies on several checks for valid and invalid (9999.0) entries.
-   The significant amount of "missing values" checked via the valid() and
-   invalid() function result in a call overhead that slows down the code.
-#. Profiling of the whole code pointed to step3 as the most slow. More
-   specifically series.combine() and the function overhead call on valid()
-   and invalid() functions there.
+#. The code performs several checks for valid (temperature records) and invalid
+   (9999.0) entries. The significant amount of "missing values" checked via the
+   valid() and invalid() function result in a call overhead that significantly
+   slows down the code.
+#. Profiling of the whole code pointed to step3 (out of 5) as the most slow.
+   More specifically series.combine() and the function overhead call on valid()
+   and invalid() function calls from series.combine().
 
 
 Masked array effort
@@ -31,7 +32,7 @@ and invalid values are faster than the current design. For example, at
 
 http://code.google.com/p/ccc-gistemp/source/browse/trunk/code/step3.py?r=690#169
 
-we have the following list comprehension 
+we have the following list comprehension
 >>> weight = [wt*valid(v) for v in subbox_series]
 
 that becomes:
@@ -62,7 +63,7 @@ Bottleneck
 ----------
 
 I also made a quick attempt with the 3rd party module bottleneck [2]. This
-module deals with missing value operations much faster than NumPy. 
+module deals with missing value operations much faster than NumPy.
 
 In this implementation all missing values were converted to np.nan
 (Not-a-Number) and the operations were carried out with bn.nansum() and etc.
@@ -128,13 +129,13 @@ compute the *bias*. *bias* is computed using only the points where composite
 and new are both valid.
 
 Original code:
->>> bias = (sum-sum_new)/count  
+>>> bias = (sum-sum_new)/count
 
 NumPy array (this does not use *sum_new*:
 >>> bias = np.nansum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
 
 Since we did not checked for count < min_overlap, we now create a variable
-*enough_months* 
+*enough_months*
 
 >>> enough_months = count >= min_overlap
 
