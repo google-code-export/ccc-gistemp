@@ -10,11 +10,10 @@ import itertools
 from giss_data import valid, invalid, MISSING
 
 import numpy as np
-
+import numpy.ma as ma
 """
 Shared series-processing code in the GISTEMP algorithm.
 """
-
 
 def combine_array(composite, weight, new, new_weight, min_overlap):
     """Run the GISTEMP combining algorithm.  This combines the data
@@ -47,9 +46,11 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
 
     # Convert all input to NumPy arrays. This won't be need once I convert
     # Series.series to array.
-    composite, weight, new, new_weight = map(np.asanyarray,
-                                          (composite, weight, new, new_weight))
+    #composite, weight, new, new_weight = map(np.asanyarray,
+                                          #(composite, weight, new, new_weight))
 
+    composite, weight, new, new_weight = map(np.array,
+                                          (composite, weight, new, new_weight))
     # Reshape the arrays into months (12) by years (132 -- so far.).
     # If Series.series is padded by default this can be done there together
     # with the array conversion at Series.series.
@@ -80,10 +81,11 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
 
     # FIXME: I'm getting some zero divide here as well (found the updated
     # *composite* warning first below.) I must check the consequences of this...
-    bias = np.nansum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
+    if 0:
+        bias = np.nansum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
     if 0:
         bias = np.sum((composite - new) * mask, axis=1) / np.sum(mask, axis=1)
-    if 0:
+    if 1:
         bias = (sum - sum_new) / count
 
     # Check for enough months (minimum overlap.)
@@ -98,11 +100,15 @@ def combine_array(composite, weight, new, new_weight, min_overlap):
                                    (new + bias[:, None])) / new_month_weight
     # FIXME: I'm getting some zero divide here at points where both composite
     # and new where invalid. I believe it is safe to set them to zero.
-    composite[np.isnan(composite)] = 0
+    # ...or not! It changes the *new_count*! (the mask returns the right result
+    # though.)
+    if 1:
+        #composite[np.isnan(composite)] = 0
+        composite[new_mask] = 0
+        new_count = np.array([np.count_nonzero(composite[i, :]) for i in range(12)])
 
-    # NOTE: should it be comp_mask ?
-    composite[new_mask] = 0
-    new_count = np.array([np.count_nonzero(composite[i, :]) for i in range(12)])
+    if 0:
+        new_count = ma.masked_array(composite, new_mask).count(axis=1)
 
     data_combined = (new_count * enough_months).tolist()
 
