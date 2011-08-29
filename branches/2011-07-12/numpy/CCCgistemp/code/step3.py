@@ -210,15 +210,16 @@ def iter_subbox_grid(station_records, max_months, first_year, radius):
                 aa, bb = record.rel_first_month, record.rel_last_month
                 new[aa - 1:bb] = record.series
 
-                if 1:
+                if 0:
                     station_months = series.combine(
                                             subbox_series, weight, new, wt,
                                             parameters.gridding_min_overlap)
-                if 0:
-                    station_months_array = series.combine_array(
+                if 1:
+                    station_months = series.combine_array(
                                             subbox_series, weight, new, wt,
                                             parameters.gridding_min_overlap)
-                    assert(station_months_array==station_months)
+
+                if 0: assert(station_months_array==station_months)
 
                 n_good_months = sum(station_months)
                 total_good_months += n_good_months
