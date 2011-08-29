@@ -1,6 +1,10 @@
-.. Step 5 also call series.combine (./code/step5.py)
-.. Check URLs
+.. header::
+    GSoC report
 
+.. footer::
+    Page ###Page###/###Total###
+
+============
 NumPy Report
 ============
 
@@ -9,12 +13,12 @@ alternative implementation of ccc-gistemp using NumPy arrays.
 
 
 The problem
------------
+===========
 
 #. The original ccc-gistemp is coded in pure python relying on list
    comprehensions and "for loops" for its algebra. That result is a slow code
    that takes approximately 30 minutes on a Intel(R) Core(TM)2 Duo CPU
-   E8400@3.00GHz machine.
+   E8400 3.00GHz machine.
 #. The code performs several checks for valid (good temperature records) and
    invalid (9999.0) entries. The significant amount of "missing values" checked
    via the valid() and invalid() function result in a call overhead that
@@ -25,7 +29,7 @@ The problem
 
 
 Masked array effort
-'''''''''''''''''''
+-------------------
 
 The first attempt was to remove the valid()/invalid() calls making use of
 NumPy's masked_arrays while vectorizing the code.
@@ -79,7 +83,7 @@ implementation. It is virtually the same logic but without the masked_array
 syntax (a little bit cleaner.)
 
 Bottleneck
-''''''''''
+----------
 
 I also made a quick attempt with the 3rd party module bottleneck [2]. This
 module deals with missing value operations much faster than NumPy.
@@ -116,16 +120,18 @@ This attempt was also dropped after David's recommendation.
 
 
 Pure NumPy
-'''''''''''
+----------
 
 The current state implements a pure NumPy version of series.combine(), renamed
 series.combine_array() to avoid disturbing step5. However, step5 should also be
-calling the same series.combine_array() at a later implementation. There are no
-changes on step3.py.
+calling the same series.combine_array() in the future. There are no changes on
+step3.py.
 
-http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970
 
 The first step is to convert all the inputs to arrays.
+
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970#52
 
 .. code-block:: python
 
@@ -143,6 +149,8 @@ profile numpy-step3.pstats).
 
 The next step we reshape the arrays into months by years. The order='F' means
 FORTRAN (column-major) order.
+
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970#57
 
 .. code-block:: python
 
@@ -162,6 +170,8 @@ http://code.google.com/p/ccc-gistemp/source/browse/trunk/code/series.py#46
 To compute all these qunaities without looping we must first get a mask where
 both *composite* and *new* have missing points.
 
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970#63
+
 .. code-block:: python
 
     >>> new_mask = new == MISSING  # get *new* MISSING values
@@ -172,6 +182,8 @@ both *composite* and *new* have missing points.
 
 The variable *new_weight* became an array with zeros at invalid values after
 this point,
+
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970#69
 
 .. code-block:: python
 
@@ -193,6 +205,9 @@ Now *count*, *sum*, and *sum_new* is just:
     """obs: np.count_nonzero() does not have an axis keyword, hence the list
     comprehension there."""
 
+Just count is computed and saved in a variable, since it is the only
+one reused later.
+
 After this step the original code checks if *count* is less than *min_overlap*.
 There must be a minimum overlap of 20 months (this value is can be changed.) If
 this statement is true the code compute *bias* using only the points where
@@ -208,14 +223,16 @@ http://code.google.com/p/ccc-gistemp/source/browse/trunk/code/series.py#55
 
 NumPy array:
 
-.. code-block:: python
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970#79
 
+.. code-block:: python
     >>> bias = np.sum((composite - new) * mask, axis=1) / count
 
-http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py#79
 
 Since we did not checked for count < min_overlap, we now create a variable
 *enough_months*,
+
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970#82
 
 .. code-block:: python
 
@@ -227,6 +244,8 @@ composite when *count < min_overlap*. This current implementation returns the
 right *data_combined* but the WRONG updated values from *composite*!
 
 Now we can update *composite* and *new_weight*:
+
+http://code.google.com/p/ccc-gistemp/source/browse/branches/2011-07-12/numpy/CCCgistemp/code/series.py?r=970#84
 
 .. code-block:: python
 
@@ -247,7 +266,7 @@ Now we can update *composite* and *new_weight*:
     >>> data_combined = (new_count * enough_months).tolist()
 
 Conclusion
-----------
+==========
 
 The NumPy implementation did not speed-up the code a lot, actually it just
 matches the speed when we removed the function call overhead by changing
@@ -260,7 +279,7 @@ min_overlap* like in the original code. Another possibility is the conversion
 to arrays.
 
 Future
-------
+======
 
 #. Load the data and convert it to NumPy array (and store at Series.series).
 #. Pad the series inside Series.series and make them all the same size
@@ -269,19 +288,73 @@ Future
 #. The function step3.incircle() is the second bottleneck of step3, re-write it
    to use NumPy arrays.
 
-References:
------------
+.. NOTE: The NumPy version cannot be run twice on the same project directory or it
+   will yield the wrong data_combined
+
+References
+==========
 [1] http://mail.scipy.org/pipermail/numpy-discussion/2009-May/042425.html
+
 [2] http://pypi.python.org/pypi/Bottleneck
 
-Appendix
---------
-URLs for the profiling:
-    * full run of the original code:
+Appendix (Profiling Code)
+=========================
 
-    * step3 of the original code:
+.. Notes on how profiling code.
 
-    * step3 using NumPy:
+Before trying to speed-up the code we need first to find where the bottlenecks
+are.
 
+The python cProfile [1] (formerly known as lsprof) module is recommended for the
+task. The underlying module is written in C, which means a much smaller
+performance hit while profiling.
 
-OBS: The NumPy version cannot be run twice on the same project directory or it will yield the wrong data_combined
+To start profiling just type:
+
+.. code-block:: bash
+
+   $ python -m cProfile -o output.pstats path/to/your/script args
+
+Visualizing Profiling Results
+-----------------------------
+
+The program kcachegrind [2] is a good cross platform profile visualization
+program. Before visualizing one must convert the pstats (or pyprof) file first
+to a calltree with pyprof2calltree [3].
+
+.. code-block:: bash
+
+    $ pyprof2calltree -i output.pstats -k
+
+There is also the module Gprof2Dot [4], a python based tool that can transform
+the profiling results output into a graph.
+
+.. code-block:: bash
+
+    $ gprof2dot -f pstats output.pstats | dot -Tpng -o output.png
+
+[1] http://docs.python.org/library/profile.html
+
+[2] http://kcachegrind.sourceforge.net/html/Home.html
+
+[3] http://pypi.python.org/pypi/pyprof2calltree/
+
+[4] http://jrfonseca.googlecode.com/svn/trunk/gprof2dot/gprof2dot.py
+
+Profiling results
+-----------------
+
+Original code complete run:
+'''''''''''''''''''''''''''
+    .. image:: original.png
+       :width: 41%
+
+Original code step3:
+'''''''''''''''''''''''''
+    .. image:: original-step3.png
+       :width: 40%
+
+NumPy step3:
+''''''''''''
+    .. image:: numpy-step3.png
+       :width: 95%
