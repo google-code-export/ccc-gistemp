@@ -54,6 +54,9 @@ A recent visit to the Met Office generated a number of ideas, _which I will fill
 
 == Other ideas ==
 
+===climate-specific matplotlib improvements===
+Matplotlib is an awesome Python library for drawing graphs, charts, contour maps, etc.  There are some ways in which it could be even better.  Two simple instances which could save time and effort: non-linear segmented colormaps; and a GUI for making segmented colormaps - both linear and otherwise.  I'm sure there are more.  Canvass opinion among climate scientist matplotlib users and put together a proposal accordingly.  This would require matplotlib familiarity, and working with the matplotlib developer community.
+
 ===Climate Code Directory===
 We have plans for a "Climate Code Directory": a comprehensive and searchable catalogue of published climate science software. We aim to make it possible to quickly discover any available code underpinning a given climate science publication.  There are already some lists of climate software, and some climate science bibliography sites, on the web, we could start by scraping those.  This project is definitely going to happen anyway, so you might be working fairly closely with an existing Foundation developer.  This will obviously need quite a bit of web development, scraping, and presumably RDF and Semantic Web.  Coding is likely to be in Python and JavaScript.  If you don't know what "Dublin Core" means, this may not be for you.
 
