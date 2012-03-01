@@ -1,0 +1,78 @@
+#summary Google Summer of Code 2012
+
+= Introduction =
+
+Climate Code Foundation's list of projects and ideas for Google Summer of Code 2012 (GSoC).  GSoC is a programme funded by Google where students work on open source projects and earn a stipend for doing so.
+
+Please discuss these projects and make suggestions on the <a href="http://mailman.climatecode.org/mailman/listinfo/gsoc-2012">mailing list</a>.
+
+*A cut-and-paste from this ideas page is not a proposal.*  These ideas are just starting points. Some of them, as they stand, are far too small to form a suitable project.  In contrast, some of them are far too large and wide-ranging to be completed in a single GSoC project.  None of them are anything like detailed enough to make a project proposal.  They are just sketches of the directions in which we want to move.  If you are a potential GSoC student, we invite you to devise a proposal based on one or more of these, or on anything else which addresses our Foundation goal (promoting the public understanding of climate science).
+
+= Ideas =
+
+== ccc-gistemp ideas ==
+
+Nick Barnes is intending to return to _ccc-gistemp_ development this summer, so any student working on it is likely to be working alongside him.
+
+=== Import GISTEMP updates ===
+
+Reto Ruedy at NASA GISS has updated GISTEMP fairly recently.  We need to import those changes, analyse them, and update our code accordingly.
+
+=== Flexible Grids ===
+Replace the 8000 cell equal area grid, which is unique to the GISTEMP analysis, with a flexible gridding system so that "industry standard" grids can be used.  These seem mostly to be simple NxN or NxM degree grids.  The user should be able to specify a grid on the command line.  All the code for a given grid should be in a separate module, so third parties could develop new grids.  There is some overlap with _GIS Integration_ because GIS tools may expect a regular grid.  This will require Python expertise and a willingness to get very intimate with the internals of ccc-gistemp.
+
+=== GIS Integration ===
+The current GISTEMP products (gridded and zonal) are in binary formats that are peculiar to GISTEMP.  We would like to see output files that can be plugged straight into industry standard GIS tools.  We are not experts in this field, so this would suit a student who already has some GIS expertise, who can make sensible choices regarding tools and formats.  We expect that this idea could be completed without needing to get bogged down with the internals of ccc-gistemp.
+
+===Super Whizzy Visualisation Browser===
+A really cool super whizzy dataset and station record browser where you can see the time series, gridded datasets, stations, and the station combinations and adjustments made.  Allows "drilling down" to see how any particular part of the global time series is comprised of combinations of cells and stations, and "drilling up" to see how stations combine to form averages over larger areas.  Also allows inspection of the internals of GISTEMP to show exactly how stations combine, and the periods and references series used for the urban adjustment (say).
+
+===NumPy Implementation===
+ccc-gistemp is never quite as fast as we'd like (because of the emphasis on clarity).  Most of the time is spent inside a very small amount of code (primarily series.combine).  We don't advocate requiring non-standard Python modules (such as numpy) in order to run ccc-gistemp, but it may be a good idea to exploit them if they are available.  Provide a "drop-in" replacement for a small amount of the ccc-gistemp code that accelerates it if numpy is available.  Would require Python and numpy expertise.  Some work in this direction was done in the 2011 GSoC.
+
+===Publication-Quality Figures===
+The figures and charts that ccc-gistemp produces, such as the one on the <a href="http://code.google.com/p/ccc-gistemp/">project googlecode home page</a>, are fine for simple visualisation and checking, but are not really good enough for a figure for a scientific publication.  The current figures require no additional software to be installed, but we see no reason (similar to the _Alternate NumPy Implementation_) why extra optional tools that produced publication quality figures could not require some additional installation.  We would expect a suitable framework to be identified (matplotlib / rpy / something we haven't heard of).
+
+===Every Published Figure===
+Take a publication like http://pubs.giss.nasa.gov/cgi-bin/abstract.cgi?id=ha00510u (Hansen et al 2010) and make sure that we have software that can do a ccc-gistemp version of every figure in there.
+
+== ccf-homogenization ideas ==
+
+_to be completed_
+
+== Common Climate Project ideas ==
+
+_to be completed_
+
+== NCDC ideas ==
+
+A recent visit to NCDC generated a number of ideas, _which I will fill in here_.
+
+== Met Office ideas ==
+
+A recent visit to the Met Office generated a number of ideas, _which I will fill in here_.
+
+== Other ideas ==
+
+===Climate Code Directory===
+We have plans for a "Climate Code Directory": a comprehensive and searchable catalogue of published climate science software. We aim to make it possible to quickly discover any available code underpinning a given climate science publication.  There are already some lists of climate software, and some climate science bibliography sites, on the web, we could start by scraping those.  This project is definitely going to happen anyway, so you might be working fairly closely with an existing Foundation developer.  This will obviously need quite a bit of web development, scraping, and presumably RDF and Semantic Web.  Coding is likely to be in Python and JavaScript.  If you don't know what "Dublin Core" means, this may not be for you.
+
+===Climate Science Libraries===
+There are a number of functions of climate science software - or of science software in general - which could be formed into useful open-source software libraries.  Some such libraries already exist, but are not available in our preferred languages.  A project to create new libraries, or provide Python bindings for existing ones, could be very useful.
+
+A good example is the CLiMT project http://people.su.se/~rcaba/climt/ a climate-modelling toolkit which includes Fortran components with Python bindings.  See also PyAOS, PyClimate.
+
+Another, seemingly trivial example: software often needs to obtain source data across the internet, for instance by FTP.  The data files may change their names, or require a changing web query.  Has the dataset been updated?   Or maybe each month's new data is in a separate file, and we need to check whether there are any new files?  Does the software fail elegantly if the data is missing, unobtainable, or the connection times out?  What format is the data in?  Plain-text?  Fortran or other raw binary?  What endianness? Can I plug in readers for a variety of different data formats?  Can I validate it?  Write a library to take all the pain out of this process.
+
+===Clear R Implementation of GISTEMP or other algorithms===
+("R" is a codeword for "some language other than Python")  Being aware that Python is not as popular as we would like in some communities, we see a need for Clear implementations (of GISTEMP-style analyses) in other languages.  R has a good track record in certain communities, and is entirely Open Source (so we would prefer it over IDL or MATLAB, say).  We would not expect the same "bug for bug" compatible approach that ccc-gistemp takes.  Given the timescales, we would expect a simpler approach would be taken.  We could advise.
+
+===CRUTEM Implementation===
+There are two parallel implementations of CRUTEM, in Fortran (CRU) and Perl (Hadley Centre).  Apparently the Perl code is open source.  How clear is it?  Can we make it clearer?
+
+===Sea-Ice Visualisation / Crowd-Sourcing Website===
+A website which presents satellite images of arctic sea ice, such as the visible-light ones from MODIS, and allows users to visually identify features.  The site collects the data into some useful dataset, and also provides visual feedback to the users.  For instance, the site might show several images from different days.  The user can select a distinctive feature on a floe, and mark it on several separate images.  The website deduces the drift velocity, displays it somehow, and collects the data.  Compare with Galaxy Zoo and Old Weather, for successful crowd-sourced science data sites.
+
+Alternatively, a site which just presents the variety of arctic sea ice data sets in separate layers on a single map - a Google Maps mashup?  Or a Google Earth application of some sort.  There's a lot of information out there.
+
+We are very open to further suggestions, and will update this page over time.
