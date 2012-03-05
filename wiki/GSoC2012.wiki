@@ -39,7 +39,7 @@ We are preparing a paper for presentation, to describe ccc-gistemp and some of t
 
 = ccf-homogenization ideas =
 
-In GSoC 2011 Dan Rothenberg reimplemented the Menne/Williams pairwise homogenization code in Python, found some bugs, and generally did an awesome project.  That needs to be completed, re-validated against the current GHCN-M 3.1.0 dataset and code.  See also the next idea.
+In GSoC 2011 Dan Rothenberg reimplemented the Menne/Williams pairwise homogenization code in Python, found some bugs, and generally did an awesome project.  That needs to be completed, re-validated against the current GHCN-M 3.1.0 dataset and code.  See also the next idea (_ccf-homogenization_ should be built as a good citizen for a general homogenization framework).
 
 = Homogenization framework/platform/benchmarking/test system =
 
@@ -47,16 +47,30 @@ Peter Thorne at NCDC has a vision for a sophisticated pluggable framework for su
 
 = Common Climate Project ideas =
 
-In GSoC 2011 Hannah Aizenman built a web framework for the Common Climate Project.  The mentoring academics would like this to be taken forward and incorporated into a working, usable website.  Talk with us on the mailing list for more details.
+In GSoC 2011 Hannah Aizenman built a web framework for the Common Climate Project. The mentoring academics would like this to be taken forward and incorporated into a working, usable website.  Talk with us on the mailing list for more details.
 
 = Met Office ideas =
 
-A recent visit to the Met Office generated a number of ideas, _which I will fill in here_.
+A recent visit to the UK Met Office threw up several project ideas:
+
+== HadISD ==
+
+A team at the Met Office are building HadISD, a high-resolution land dataset.  Their intention is to make their code open-source and usable to third parties.  They would be interested in a student proposal to contribute to that.  They have a number of ideas for future refinement of their system (e.g. more/better quality control, Bayesian flagging, incorporating additional climatic variables), and are also interested in accessibility (e.g. a GUI station selector? a maps mashup? more visualisation tools, e.g. web visualisation?)
+
+== UKMO Proprietary Routines ==
+
+The UK Met Office has a volume of proprietary IDL code which is often reused in various projects (some of this code implements a proprietary file format).  Several teams at the Met Office, interested in (a) using languages other than IDL and/or (b) open source release of their work, have re-implemented some of these routines in, usually, Python.  There is some institutional politics here, meaning that some of these routines have had to be rewritten by several different groups.  A student working with a Met Office mentor could sort it out and create a stand-alone open-source library of Python routines.
+
+== HadCRUT4 ==
+
+HadCRUT4 is coming soon (probably published before GSoC 2012 starts).  This idea is for a project to open up the analysis and visualize the results.
 
 = Other ideas =
 
 == climate-specific matplotlib improvements ==
 Matplotlib is an awesome Python library for drawing graphs, charts, contour maps, etc.  There are some ways in which it could be even better.  Two simple instances which could save time and effort: non-linear segmented colormaps; and a GUI for making segmented colormaps - both linear and otherwise.  I'm sure there are more.  Canvass opinion among climate scientist matplotlib users and put together a proposal accordingly.  This would require matplotlib familiarity, and working with the matplotlib developer community.  The matplotlib community has expressed an interest in co-mentoring such a proposal (which might also work well with some of the 'Figure' ideas listed above).
+
+One climate scientist suggested that there could be a project to bring GUI features from IDL into the Python/matplotlib world.  I don't know enough about IDL to comment.  Do you?
 
 == Climate Code Directory ==
 
