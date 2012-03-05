@@ -39,15 +39,15 @@ We are preparing a paper for presentation, to describe ccc-gistemp and some of t
 
 = ccf-homogenization ideas =
 
-_to be completed_
+In GSoC 2011 Dan Rothenberg reimplemented the Menne/Williams pairwise homogenization code in Python, found some bugs, and generally did an awesome project.  That needs to be completed, re-validated against the current GHCN-M 3.1.0 dataset and code.  See also the next idea.
+
+= Homogenization framework/platform/benchmarking/test system =
+
+Peter Thorne at NCDC has a vision for a sophisticated pluggable framework for supporting, comparing, and testing homogenization algorithms, as part of the International Surface Temperature Initiative.  This could combine well with the previous idea.  See http://www.surfacetemperatures.org/benchmarking-and-assessment-working-group
 
 = Common Climate Project ideas =
 
-_to be completed_
-
-= NCDC ideas =
-
-A recent visit to NCDC generated a number of ideas.  Specifically, they have a new Surface Temperatures project
+In GSoC 2011 Hannah Aizenman built a web framework for the Common Climate Project.  The mentoring academics would like this to be taken forward and incorporated into a working, usable website.  Talk with us on the mailing list for more details.
 
 = Met Office ideas =
 
