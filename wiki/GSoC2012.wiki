@@ -70,7 +70,15 @@ HadCRUT4 is coming soon (probably published before GSoC 2012 starts).  This idea
 == climate-specific matplotlib improvements ==
 Matplotlib is an awesome Python library for drawing graphs, charts, contour maps, etc.  There are some ways in which it could be even better.  Two simple instances which could save time and effort: non-linear segmented colormaps; and a GUI for making segmented colormaps - both linear and otherwise.  I'm sure there are more.  Canvass opinion among climate scientist matplotlib users and put together a proposal accordingly.  This would require matplotlib familiarity, and working with the matplotlib developer community.  The matplotlib community has expressed an interest in co-mentoring such a proposal (which might also work well with some of the 'Figure' ideas listed above).
 
-One climate scientist suggested that there could be a project to bring GUI features from IDL into the Python/matplotlib world.  I don't know enough about IDL to comment.  Do you?
+One climate scientist recently suggested that there could be a project to bring GUI features from IDL into the Python/matplotlib world.  I don't know enough about IDL to comment.  Do you?
+
+== Simple animated energy balance model ==
+
+A set of very simple web-based animated models, starting with the simplest of zero-dimensional climate models, and adding various climate system components.  Web ninja skills required.
+
+== There's an App for That ==
+
+Is there?  Are there any Android (or iOS) apps for climate data?  Are there any good ones?  One possibility would be a version of the "2050 Pathways" tool from DECC (more complete than the toy app they have available at present).  The existing web tool is all open-source and based on open data.
 
 == Climate Code Directory ==
 
