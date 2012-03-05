@@ -4,9 +4,9 @@
 
 Climate Code Foundation's list of projects and ideas for Google Summer of Code 2012 (GSoC).  GSoC is a programme funded by Google where students work on open source projects and earn a stipend for doing so.
 
-Please discuss these projects and make suggestions on the <a href="http://mailman.climatecode.org/mailman/listinfo/gsoc-2012">mailing list</a>.
+Please discuss these projects and make suggestions on the <a href="http://mailman.climatecode.org/mailman/listinfo/gsoc-2012">mailing list</a>. *Proposals from students who have not shown up on the mailing list to discuss their ideas will probably be rejected.*
 
-*A cut-and-paste from this ideas page is not a proposal.*  These ideas are just starting points. Some of them, as they stand, are far too small to form a suitable project.  In contrast, some of them are far too large and wide-ranging to be completed in a single GSoC project.  None of them are anything like detailed enough to make a project proposal.  They are just sketches of the directions in which we want to move.  If you are a potential GSoC student, we invite you to devise a proposal based on one or more of these, or on anything else which addresses our Foundation goal (promoting the public understanding of climate science).  We strongly recommend that you make an initial approach on the mailing list, so we can help you to devise a strong proposal.
+*Proposals which are cut-and-paste from this list will be rejected.*  These ideas are just starting points. Some of them, as they stand, are far too small to form a suitable project.  In contrast, some of them are far too large and wide-ranging to be completed in a single GSoC project.  None of them are anything like detailed enough to make a project proposal.  They are just sketches of the directions in which we want to move.  If you are a potential GSoC student, we invite you to devise a proposal based on one or more of these, or on anything else which addresses our Foundation goal (promoting the public understanding of climate science).  We strongly recommend that you make an initial approach on the mailing list, so we can help you to devise a strong proposal.
 
 = ccc-gistemp ideas =
 
