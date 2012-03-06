@@ -55,15 +55,24 @@ A recent visit to the UK Met Office threw up several project ideas:
 
 == HadISD ==
 
-A team at the Met Office are building HadISD, a high-resolution land dataset.  Their intention is to make their code open-source and usable to third parties.  They would be interested in a student proposal to contribute to that.  They have a number of ideas for future refinement of their system (e.g. more/better quality control, Bayesian flagging, incorporating additional climatic variables), and are also interested in accessibility (e.g. a GUI station selector? a maps mashup? more visualisation tools, e.g. web visualisation?)
+A team at the Met Office are building HadISD, a high-resolution land dataset.  Their intention is to make their code open-source and usable to third parties.  They would be interested in a student proposal to contribute to that.  They have a number of ideas for future refinement of their system (e.g. more/better quality control, Bayesian flagging, incorporating additional climatic variables), and are also interested in accessibility (e.g. a GUI station selector? a maps mashup? more visualisation tools, e.g. web visualisation?) and in separating out their quality-control code into a stand-alone library.  A student would work with a Met Office mentor.
 
-== UKMO Proprietary Routines ==
+== UKMO Shared Routines ==
 
-The UK Met Office has a volume of proprietary IDL code which is often reused in various projects (some of this code implements a proprietary file format).  Several teams at the Met Office, interested in (a) using languages other than IDL and/or (b) open source release of their work, have re-implemented some of these routines in, usually, Python.  There is some institutional politics here, meaning that some of these routines have had to be rewritten by several different groups.  A student working with a Met Office mentor could sort it out and create a stand-alone open-source library of Python routines.
+The UK Met Office Hadley Centre develop a number of climate
+data-products. This involves designing and coding routines that could be
+of great use to both researchers and interested others. This is mostly
+in IDL and created without a third party user in mind. Several teams at
+the Met Office are interested in (a) using languages other than IDL
+and/or (b) open source release of their work. Re-implementation of some
+of these routines in Python, with GUIs in places, could be highly
+advantageous. A student working with a Met Office mentor could make
+significant contributions to opening up climate-data routines to the
+wider community.
 
 == HadCRUT4 ==
 
-HadCRUT4 is coming soon (probably published before GSoC 2012 starts).  This idea is for a project to open up the analysis and visualize the results.
+HadCRUT4 is coming soon (probably published before GSoC 2012 starts).  This idea is for a project to open up the analysis and visualize the results. _more information to be supplied_
 
 = Other ideas =
 
