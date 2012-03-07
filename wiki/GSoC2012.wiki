@@ -2,7 +2,7 @@
 
 = Introduction =
 
-This is the Climate Code Foundation's list of projects and ideas for Google Summer of Code 2012 (GSoC).  GSoC is a programme funded by Google where students work on open source projects and earn a stipend for doing so.
+This is the Climate Code Foundation's list of projects and ideas for Google Summer of Code 2012 (GSoC).  GSoC is a programme funded by Google where students work on open source projects and earn a stipend for doing so.  For more about GSoC, see their [http://www.google-melange.com/gsoc/homepage/google/gsoc2012 website].
 
 Please discuss these projects and make suggestions on the <a href="http://mailman.climatecode.org/mailman/listinfo/gsoc-2012">mailing list</a>.
 
