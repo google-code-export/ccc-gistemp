@@ -1,1 +1,47 @@
 #summary Template for student applications for Google Summer of Code 2012
+
+==About Us==
+
+Thank you for considering the Climate Code Foundation as your mentoring organisation for Google Summer of Code 2011.  We hope to work with you to produce a successful project, increasing public understanding of climate science.
+
+You should submit your proposal in plain text.  Proposals in proprietary formats, including Microsoft Word or PowerPoint, will not be read.
+
+As a small organisation with limited language skills, we are not likely to be able to mentor you successfully unless you are fluent in English.  Also, mentoring is more likely to succeed if you are able to meet us in the UK at least once.  We will require weekly progress updates by email, and will encourage you to be in frequent contact with us throughout the project.
+
+We don't have a "template" as such, with boxes to tick and fields to fill in, but to maximise your chance of working with us in this year's Summer of Code, your application should provide the following information.
+
+==About You==
+
+ * Name and contact information: email, phone, IM, Skype, website?
+
+ * Location, timezone, and language(s).
+
+ * Level of experience in scientific or numeric computation.  Which is your favourite Fortran compiler, and why?  Matlab?  Mathematica?   Numpy/Scipy?  NAG?  Have you written FFT code?  Used a wavelet transform?  Debugged someone else's crufty old data-processing code?
+
+ * Level of experience with open-source software.  Do you know what "open-source" means?  Have you read "the Cathedral and the Bazaar"?  Do you use open-source software tools?  Linux?  GCC?  Eclipse?  Have you contributed to any open-source software before?
+
+ * Level of experience with Python or other open-source languages used by scientists or open-knowledge experts (e.g. R, JavaScript).  Have you used them?  Do you use them regularly in your work or study?
+
+ * Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Have you ever written one?
+
+ * Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
+
+ * Why are you intending to participate in Google Summer of Code?
+
+ * Why have you chosen the Climate Code Foundation as your mentors for the Summer of Code?
+
+ * What other summer activities are you planning? (for example, travel, workshops, study)
+
+== About your Project==
+
+ * Explain your project proposal.  You don't have to limit yourself to material from our ideas page: we have very broad goals and will look at any proposal which addresses them.
+
+ * What are your project's deliverables?
+
+ * How will your project promote the public understanding of climate science?
+
+ * Does your project require any travel?
+
+ * What are the main risks to the success of your project?  All projects have risks; it is important to identify them and tackle them early.  Are there resources you will need which you might not have access to?  Integrations with other pieces of software which might not go smoothly?
+
+ * What support will your project require, aside from regular mentoring feedback?
