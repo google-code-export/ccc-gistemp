@@ -93,6 +93,10 @@ A set of very simple web-based animated models, starting with the simplest of ze
 
 Is there?  Are there any Android (or iOS) apps for climate data?  Are there any good ones?  One possibility would be a version of the "2050 Pathways" tool from DECC (more complete than the toy app they have available at present).  The existing web tool is all open-source and based on open data.
 
+== Open ICOADS ==
+
+The international surface marine database ICOADS has over two decades heritage and been enormously successful. It has also been largely dependent upon one or two individuals. The largest practical barrier to truly international participation is a lack of easily usable and version controlled code. This project would look to provide an open source, well documented, version of the code to promote multi-national participation in this archive. This is vital work - the oceans cover 70% of the earth's surface and without ICOADS it would be nearly impossible to characterize changes in sea surface temperatures, humidity, pressure etc. The student would work with several partner institutes in the US and UK.
+
 == Climate Code Directory ==
 
 We have plans for a "Climate Code Directory": a comprehensive and searchable catalogue of published climate science software. We aim to make it possible to quickly discover any available code underpinning a given climate science publication.  There are already some lists of climate software, and some climate science bibliography sites, on the web, we could start by scraping those.  This project is definitely going to happen anyway, so you might be working fairly closely with an existing Foundation developer.  This will obviously need quite a bit of web development, scraping, and presumably RDF and Semantic Web.  Coding is likely to be in Python and JavaScript.  If you don't know what "Dublin Core" means, this may not be for you.
