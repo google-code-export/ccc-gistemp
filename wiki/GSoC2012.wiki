@@ -1,4 +1,4 @@
-#summary Google Summer of Code 2012
+#summary Google Summer of Code 2012 Ideas Page
 
 = Introduction =
 
