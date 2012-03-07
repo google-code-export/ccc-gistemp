@@ -1,0 +1,1 @@
+#summary Template for student applications for Google Summer of Code 2012
