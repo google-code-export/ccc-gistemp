@@ -2,7 +2,7 @@
 
 = Introduction =
 
-Climate Code Foundation's list of projects and ideas for Google Summer of Code 2012 (GSoC).  GSoC is a programme funded by Google where students work on open source projects and earn a stipend for doing so.
+This is the Climate Code Foundation's list of projects and ideas for Google Summer of Code 2012 (GSoC).  GSoC is a programme funded by Google where students work on open source projects and earn a stipend for doing so.
 
 Please discuss these projects and make suggestions on the <a href="http://mailman.climatecode.org/mailman/listinfo/gsoc-2012">mailing list</a>.
 
@@ -39,7 +39,7 @@ Take a publication like http://pubs.giss.nasa.gov/cgi-bin/abstract.cgi?id=ha0051
 
 == Coding for ccc-gistemp Paper ==
 
-We are preparing a paper for presentation, to describe ccc-gistemp and some of the research we have done using it.  This has required some code (e.g. to make figures).  We would welcome help with this as part of a project (this would probably go well with one of the other 'Figures' project ideas above).
+We are preparing a paper for presentation, to describe ccc-gistemp and some of the research we have done using it.  This has required some code (e.g. to make figures).  We would welcome help with this as part of a project (this would probably go well with one of the other 'Figures' project ideas above).  If you make a large contribution to the paper, you should become a co-author.
 
 = ccf-homogenization ideas =
 
@@ -47,7 +47,7 @@ In GSoC 2011 Dan Rothenberg reimplemented the Menne/Williams pairwise homogeniza
 
 = Homogenization framework/platform/benchmarking/test system =
 
-Peter Thorne at NCDC has a vision for a sophisticated pluggable framework for supporting, comparing, and testing homogenization algorithms, as part of the International Surface Temperature Initiative.  This could combine well with the previous idea.  See http://www.surfacetemperatures.org/benchmarking-and-assessment-working-group
+Peter Thorne at NCDC (chair of the International Surface Temperature Initiative) has a vision for a sophisticated pluggable framework for supporting, comparing, and testing homogenization algorithms. This could combine well with the previous idea.  The dominant source of uncertainty in our estimates of climate change arises from the impact of the choices of pathway from bias-impacted 'raw' data to a final product: there is no 'how to' guide. By creating a modular framework whereby investigators can plug and play with different reasonable approaches to different, necessary, steps we would better enable an assessment of this uncertainty. The code would also be run on benchmarks (http://www.surfacetemperatures.org/benchmarking-and-assessment-working-group). In the longer term a successful project may add a gaming element for the serious gaming community. Getting the crowd to act as a 'neural network' by running code variants on the observations and the benchmarks.
 
 = Common Climate Project ideas =
 
