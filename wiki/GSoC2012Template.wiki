@@ -22,7 +22,7 @@ To maximize your chance of having your proposal accepted by the Foundation, and 
   * Join [http://mailman.climatecode.org/mailman/listinfo/gsoc-2012 the mailing list], introduce yourself, and start a discussion of your ideas.
   * Join [irc://irc.oftc.net/ccf our IRC channel] and hang out there.  We don't use IRC much outside of GSoC, and you might find it's very quiet sometimes, but we use it a lot during GSoC and we're likely to be there occasionally during the proposal period.
   * Participate in email and IRC discussions until we have agreed a clear proposal outline.
-  *  On the GSoC website, submit a plain-text proposal, answering the questions below.  Proposals in proprietary formats such as Word or PDF will be unlikely to succeed.
+  *  On the GSoC website, submit a plain-text proposal, providing the information listed below.  Proposals in proprietary formats such as Word or PDF will be unlikely to succeed.
 
 If your proposal is accepted and your project is funded:
 
@@ -34,6 +34,8 @@ If your proposal is accepted and your project is funded:
 And of course you must write code, take part in our community, and complete your project.  We are well aware that project requirements and scopes change as a project progresses - these changes should be discussed and agreed with your mentor(s), but we _won't_ fail a student on a technicality in the small print of a project proposal.  However, students who don't submit their progress reports or who otherwise seem to be dropping out, or not progressing, _will_ be chased, and if they don't shape up, they _will_ be failed, and _will not_ receive payments from Google.
 
 ==Information we require about you==
+
+Your proposal should include this information about you:
 
  * Name, contact information: email, phone, IM, IRC handle, Skype? website?
 
@@ -47,7 +49,7 @@ And of course you must write code, take part in our community, and complete your
 
  * Level of experience with Python or other open-source languages used by scientists or open-knowledge experts (e.g. R, JavaScript).  Have you used them?  Do you use them regularly in your work or study?
 
- * Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Have you ever written one?
+ * Level of education and experience in scientific research.  Can you read and understand a published science research paper?  Do you do that often?  Have you ever written one?
 
  * Level of experience in climate science.  Maybe you're a graduate student in atmospheric chemistry?  Or a post-doc working on global circulation models?  Or an undergraduate studying geography?  Maybe your education is not related to climate science, but you have a keen personal interest in the subject.  What have you read?  What do you know?
 
@@ -58,6 +60,8 @@ And of course you must write code, take part in our community, and complete your
  * What other summer activities are you planning? (for example, travel, workshops, study)
 
 ==Information we require about your project==
+
+Your proposal should include this information about your project:
 
  * Explain your project proposal.  You don't have to limit yourself to material from our ideas page: we have very broad goals and will look at any proposal which addresses them.
 
