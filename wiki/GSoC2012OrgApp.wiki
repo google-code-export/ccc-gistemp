@@ -37,12 +37,21 @@ irc://irc.oftc.net/ccf
 http://mailman.climatecode.org/mailman/listinfo/gsoc-2012
 
 ===Why is your organization applying to participate in Google Summer of Code 2012? What do you hope to gain by participating?===
+We hope to:
+* improve the public understanding of climate science;
+* promote better practices among climate scientists;
+* foster the Open Source spirit among aspiring students;
+* grow the community around the Foundation;
+* increase the public visibility of the Foundation.
 
-[TBC]
+[This is the same answer as last year, when our participation did achieve all these goals].
 
 ===Did your organization participate in past Google Summer of Codes? If so, please summarize your involvement and the successes and challenges of your participation.===
 
-[TBC]
+We participated for the first time in 2011.  We mentored 3 students, all of whom passed.  Their projects strengthened and broadened our development work significantly.
+Those projects also created or bolstered working relationships between the Foundation and several academic climate science groups (NCDC, USC, LDEO).  The NCDC in particular was so pleased with Dan Rothenberg's project that they wrote to us (and to Carol) to thank us (and Google) for the project.
+All three students presented at the Python symposium at the American Meteorological Society annual meeting in New Orleans in January 2012, spreading the good news of GSoC far and wide.
+Furthermore, their projects have been excellent material for many presentations given by Foundation members to scientists, promoting the use of open source software, and arguing for the greater use of open source licenses.
 
 ===If your organization has not previously participated in Google Summer of Code, have you applied in the past? If so, for what year(s)?===
 
@@ -54,19 +63,39 @@ http://code.google.com/p/ccc-gistemp/wiki/GSoC2012Template
 
 ===What criteria did you use to select your mentors for this year's program? Please be as specific as possible.===
 
-[TBC]
+[2011:] The criteria we used were:
+
+ * availability;
+ * commitment to the goals of the Foundation;
+ * track record in managing software projects;
+ * technical expertise in the relevant areas.
 
 ===What is your plan for dealing with disappearing students?===
 
-[TBC]
+[2011:] As software contractors and consultants we have long experience of software subcontract management.  The key risk in that area is non-delivery, and the key activity to reduce that risk is regular interaction, tracking and oversight.
+
+We think abrupt disappearance of a student is unlikely.  Far more likely is gradual disaffection or failure to progress, leading to eventual "disappearance".
+
+If a student is losing interest or motivation, or not progressing with the project, we need to discover this and take action as soon as possible.  With that in mind, we will request detailed email progress updates from students once per week, in addition to more-frequent informal interaction (email, IM, phone).  Through this interaction we can identify problems early and take action accordingly.
+
+If a student is losing interest in their project, or finds that they lack a necessary skill or resource, we will help him or her to find alternative ways of moving forward.  Our organisation goals are very broad, and there are many different project outcomes which could promote those goals.  We are long-standing advocates of evolutionary development: specifications should always evolve over the course of a project.  A project which exactly meets an initial specification is less use than one which has evolved over time to meet an improved specification.
+
+Regarding abrupt disappearance of a student, or the eventual finding that a student cannot develop their project into something which suits both the students and ourselves, we note that none of our project ideas are critical to the success of the Foundation, so ultimately if a project fails our organization is not at risk.
 
 ===What is your plan for dealing with disappearing mentors?===
 
-[TBC]
+[2011:] It is most likely that the mentors will be Foundation staff, in  which case there is negligible likelihood that they will disappear.  It is possible that a mentor will be a US academic associated with the Open Climate Project.  In either case, we have backup mentors, and we expect most communications to be shared so that other mentors can be kept up to speed should they need to step in.
 
 ===What steps will you take to encourage students to interact with your project's community before, during and after the program?===
 
-[TBC]
+[2011:]
+ * Before: we are already in contact with ten potential students, after announcing our possible involvement in GSoC2011 on our blog and a couple of climate-science mailing lists.  We expect more to appear once the Foundation is accepted as a mentoring organisation.  Students are free to join our ccc-gistemp mailing list, and after confirmation as a mentoring organisation, we will encourage potential students to do so, as well as establishing a gsoc2011@climatecode.org mailing list. We will work with students in project proposal development.
+
+After project selection, we will contact selected students directly and engage with them individually, inviting them to meet us in person and chatting with them by IM as they find their way around our existing code base or the problem domain of their project.  We will create individual per-project mailing lists @climatecode.org, to be cc'ed on all project-specific email.
+
+ * During: As detailed above, we will require weekly email progress updates, and encourage more frequent chats via email, IM, or phone.  For students in Western Europe, we may be able to meet in person once or twice during the project.  For some projects (for instance, our Climate Code Directory idea), we may be taking part in software development alongside the student.
+
+ * After: For successful projects with ongoing post-project development work, we would certainly keep the per-project mailing list running, and encourage the student to remain on it.  Many of our project ideas will connect naturally with parts of the climate science community, and we expect students on such projects will form networks through that.
 
 ===Are you a new organization who has a Googler or other organization to vouch for you? If so, please list their name(s) here.===
 
